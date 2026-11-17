@@ -1,6 +1,6 @@
 // ============================================================================
 // CustomObjectWPF — contrôles personnalisés (WPF)
-// VERSION : 16
+// VERSION : 21
 // RÈGLE : incrémenter VERSION de 1 à CHAQUE modification du fichier
 // (même une petite), et ajouter une ligne dans l'historique ci-dessous.
 // Ça permet de savoir quelle version du fichier on a sous les yeux.
@@ -57,6 +57,35 @@
 //        (et son texte) qui restent. Watermark aligné avec le curseur
 //        (décalé d'un Padding vers la droite). Texte du champ du
 //        ComboBox lié au Foreground (noir par défaut).
+//   v17 — Défauts nettoyés (fini le gris pâle sur gris pâle) : fond
+//        blanc + texte noir par défaut sur les 12 contrôles (le bouton
+//        était gris clair, la liste / la carte / la case /
+//        l'interrupteur / le curseur n'avaient pas de défaut et
+//        héritaient une couleur claire illisible sur fond blanc).
+//   v18 — Le survol met le texte en noir (ListBox + liste du
+//        ComboBox) : le survol ne changeait que le fond (bleu très
+//        clair) et laissait le texte tel quel — un texte blanc (ex. :
+//        la navigation, Foreground="White" sur fond sombre) restait
+//        blanc sur le fond clair = illisible.
+//   v19 — NumericUpDown : symboles des boutons +/− modifiables
+//        (UpText / DownText, défaut "▲" / "▼") : mets "+" / "-" pour
+//        des plus/moins, "˄" / "˅" pour des chevrons, "↑" / "↓" pour
+//        des flèches... C'est du texte : n'importe quelle chaîne.
+//   v20 — UpText / DownText RETIRÉS, remplacés par Symbols (enum
+//        StepSymbols, comme Visibility en WPF : des options
+//        prédéfinies, pas du texte libre — les triangles ne se tapent
+//        pas facilement) : Triangles (▲/▼, défaut), PlusMinus (+/-),
+//        Chevrons (˄/˅), Arrows (↑/↓).
+//   v21 — Foreground noir par défaut POSÉ à la création (SetValue,
+//        pas SetCurrentValue) : l'héritage du Foreground clair de la
+//        fenêtre écrasait le SetCurrentValue, le texte restait clair
+//        sur fond blanc (il fallait écrire Foreground="Black" en XAML
+//        pour le corriger). Un attribut en XAML reprend le dessus ;
+//        un Setter de Style, non (valeur locale). Cartes d'exemple de
+//        la vitrine redevenues sombres ; watermark du PasswordBox /
+//        PasswordReveal recalé (le Padding v16 le poussait trop à
+//        droite) ; hover rond pour la loupe du SearchBox (nouveaux
+//        DP SearchIconHoverBackground / ClearIconHoverBackground).
 // ============================================================================
 using System.Globalization;
 using System.Windows;
@@ -371,8 +400,8 @@ namespace CustomObjectWPF.Model
             // d'autre ne les définit, mais un Style, un trigger ou un binding
             // reprend le dessus normalement. Les 4 autres contrôles ne posent
             // pas de défauts dans leur constructeur, rien à changer pour eux.
-            SetCurrentValue(BackgroundProperty, Media.Brushes.LightGray);
-            SetCurrentValue(ForegroundProperty, Media.Brushes.Black);
+            SetCurrentValue(BackgroundProperty, Media.Brushes.White);
+            SetValue(ForegroundProperty, Media.Brushes.Black);
 
             SetCurrentValue(BorderThicknessProperty, new Thickness(1));
 
@@ -802,6 +831,12 @@ namespace CustomObjectWPF.Model
         public CheckBoxCustom()
         {
             Template = BuildTemplate();
+            // Texte noir par défaut : le libellé héritait la couleur de la
+            // fenêtre (claire dans une fenêtre sombre) et devenait illisible
+            // sur fond blanc. Posé avec SetValue (valeur locale) :
+            // SetCurrentValue perd contre l'héritage. Un attribut en XAML
+            // reprend le dessus (posé après) ; un Setter de Style, non.
+            SetValue(ForegroundProperty, Media.Brushes.Black);
             RefreshNeon();
         }
 
@@ -1109,6 +1144,9 @@ namespace CustomObjectWPF.Model
         public ToggleSwitchCustom()
         {
             Template = BuildTemplate();
+            // Texte noir par défaut (même raison que CheckBoxCustom :
+            // SetValue, pas SetCurrentValue — l'héritage l'écrase).
+            SetValue(ForegroundProperty, Media.Brushes.Black);
             RefreshNeon();
         }
 
@@ -1433,6 +1471,13 @@ namespace CustomObjectWPF.Model
         public CardCustom()
         {
             Template = BuildTemplate();
+            // Fond blanc + texte noir par défaut : sans ça, la carte était
+            // transparente (elle prenait la couleur du fond derrière) et son
+            // contenu héritait la couleur claire de la fenêtre — illisible
+            // sur fond blanc. Posés avec SetCurrentValue : un Style ou une
+            // valeur en XAML reprend le dessus normalement.
+            SetCurrentValue(BackgroundProperty, Media.Brushes.White);
+            SetValue(ForegroundProperty, Media.Brushes.Black);
             RefreshNeon(); // fallback sur le contrôle tant que le template n'est pas appliqué
         }
 
@@ -1742,6 +1787,9 @@ namespace CustomObjectWPF.Model
         public SliderCustom()
         {
             Template = BuildTemplate();
+            // Texte noir par défaut (cohérence avec les autres contrôles :
+            // SetValue, pas SetCurrentValue — l'héritage l'écrase).
+            SetValue(ForegroundProperty, Media.Brushes.Black);
             NeonHelper.ApplyEffect(this, Neon, NeonColor, NeonRadius);
         }
 
@@ -2136,6 +2184,11 @@ namespace CustomObjectWPF.Model
 
         public ListBoxCustom()
         {
+            // Fond blanc + texte noir par défaut : sans ça, la liste héritait
+            // la couleur claire de la fenêtre et ses lignes devenaient
+            // illisibles sur fond blanc (texte clair sur fond clair).
+            SetCurrentValue(BackgroundProperty, Media.Brushes.White);
+            SetValue(ForegroundProperty, Media.Brushes.Black);
             Template = BuildTemplate();
             // Style des lignes : si tu définis ton propre ItemContainerStyle
             // en XAML, le tien remplace celui-ci (posé après le constructeur).
@@ -2295,7 +2348,13 @@ namespace CustomObjectWPF.Model
                 Property = Controls.Control.ForegroundProperty,
                 Value = AncestorBinding(nameof(SelectedItemForeground))
             });
-            // Survolé : fond bleu très clair, texte inchangé (noir par défaut) : lisible.
+            // Survolé : fond bleu très clair + texte noir. Le texte DOIT
+            // devenir noir : sinon un texte blanc (ex. : la navigation,
+            // Foreground="White" sur fond sombre) resterait blanc sur le
+            // fond clair du survol = illisible. Quand la souris part, le
+            // texte reprend sa couleur normale (le setter se retire tout
+            // seul). La sélection gagne toujours sur le survol (v16) : un
+            // élément choisi survolé garde son fond et son texte.
             Trigger hoverTrigger = new()
             {
                 Property = UIElement.IsMouseOverProperty,
@@ -2307,6 +2366,11 @@ namespace CustomObjectWPF.Model
                 TargetName = "itemBorder",
                 Value = new SolidColorBrush(
                     (Color)ColorConverter.ConvertFromString("#FFE5F1FB"))
+            });
+            hoverTrigger.Setters.Add(new Setter
+            {
+                Property = Controls.Control.ForegroundProperty,
+                Value = Media.Brushes.Black
             });
             itemTemplate.Triggers.Add(hoverTrigger);
 
@@ -2465,9 +2529,12 @@ namespace CustomObjectWPF.Model
             // Texte noir par défaut : le fond du champ est blanc par défaut,
             // donc le texte (et le curseur, et les points du mot de passe)
             // doit être sombre, sinon il est invisible dans une fenêtre
-            // sombre (Foreground clair hérité sur fond blanc). Un Style ou
-            // une valeur en XAML reprend le dessus normalement.
-            SetCurrentValue(ForegroundProperty, Media.Brushes.Black);
+            // sombre (Foreground clair hérité sur fond blanc). Posé avec
+            // SetValue (valeur locale) : SetCurrentValue perd contre
+            // l'héritage, il fallait écrire Foreground="Black" en XAML
+            // pour le corriger. Un attribut en XAML reprend le dessus
+            // (posé après le constructeur) ; un Setter de Style, non.
+            SetValue(ForegroundProperty, Media.Brushes.Black);
 
             Template = BuildTemplate();
             RefreshNeon(); // fallback sur le contrôle tant que le template n'est pas appliqué
@@ -2885,9 +2952,12 @@ namespace CustomObjectWPF.Model
             // Texte noir par défaut : le fond du champ est blanc par défaut,
             // donc le texte (et le curseur, et les points du mot de passe)
             // doit être sombre, sinon il est invisible dans une fenêtre
-            // sombre (Foreground clair hérité sur fond blanc). Un Style ou
-            // une valeur en XAML reprend le dessus normalement.
-            SetCurrentValue(ForegroundProperty, Media.Brushes.Black);
+            // sombre (Foreground clair hérité sur fond blanc). Posé avec
+            // SetValue (valeur locale) : SetCurrentValue perd contre
+            // l'héritage, il fallait écrire Foreground="Black" en XAML
+            // pour le corriger. Un attribut en XAML reprend le dessus
+            // (posé après le constructeur) ; un Setter de Style, non.
+            SetValue(ForegroundProperty, Media.Brushes.Black);
 
             Template = BuildTemplate();
             RefreshNeon(); // fallback sur le contrôle tant que le template n'est pas appliqué
@@ -3112,19 +3182,11 @@ namespace CustomObjectWPF.Model
             watermark.SetBinding(
                 Controls.TextBlock.FontSizeProperty,
                 new WPF.Data.Binding(nameof(FontSize)) { RelativeSource = templatedParent });
-            // Aligné avec le curseur : le texte est décalé d'un Padding vers
-            // la droite (le champ applique son Padding deux fois : une fois
-            // par la marge du modèle, une fois en interne), alors que le
-            // watermark n'en a qu'un. On lui ajoute donc un Padding à gauche
-            // égal au Padding du champ, sinon le curseur tombe au milieu de
-            // la première lettre du texte d'aide.
-            watermark.SetBinding(
-                Controls.TextBlock.PaddingProperty,
-                new WPF.Data.Binding("Padding.Left")
-                {
-                    RelativeSource = templatedParent,
-                    Converter = new DoubleToLeftMarginConverter()
-                });
+            // Aligné avec le curseur : le champ interne a Margin = Padding
+            // et Padding = 0, donc son texte est à 1x Padding. Le watermark
+            // a la même marge (Margin = Padding) et pas de Padding : il
+            // commence exactement au même endroit. (Le Padding.Left ajouté
+            // en v16 le poussait à 2x Padding, trop à droite — retiré.)
 
             // Le watermark est DERRIÈRE le champ : les points du mot de passe
             // et le curseur peignent par-dessus, toujours visibles.
@@ -4074,9 +4136,12 @@ namespace CustomObjectWPF.Model
             // Texte noir par défaut : le fond du champ est blanc par défaut,
             // donc le texte (et le curseur, et les points du mot de passe)
             // doit être sombre, sinon il est invisible dans une fenêtre
-            // sombre (Foreground clair hérité sur fond blanc). Un Style ou
-            // une valeur en XAML reprend le dessus normalement.
-            SetCurrentValue(ForegroundProperty, Media.Brushes.Black);
+            // sombre (Foreground clair hérité sur fond blanc). Posé avec
+            // SetValue (valeur locale) : SetCurrentValue perd contre
+            // l'héritage, il fallait écrire Foreground="Black" en XAML
+            // pour le corriger. Un attribut en XAML reprend le dessus
+            // (posé après le constructeur) ; un Setter de Style, non.
+            SetValue(ForegroundProperty, Media.Brushes.Black);
 
             Template = BuildTemplate();
             RefreshNeon(); // fallback sur le contrôle tant que le template n'est pas appliqué
@@ -4601,19 +4666,11 @@ namespace CustomObjectWPF.Model
             watermark.SetBinding(
                 Controls.TextBlock.FontSizeProperty,
                 new WPF.Data.Binding(nameof(FontSize)) { RelativeSource = templatedParent });
-            // Aligné avec le curseur : le texte est décalé d'un Padding vers
-            // la droite (le champ applique son Padding deux fois : une fois
-            // par la marge du modèle, une fois en interne), alors que le
-            // watermark n'en a qu'un. On lui ajoute donc un Padding à gauche
-            // égal au Padding du champ, sinon le curseur tombe au milieu de
-            // la première lettre du texte d'aide.
-            watermark.SetBinding(
-                Controls.TextBlock.PaddingProperty,
-                new WPF.Data.Binding("Padding.Left")
-                {
-                    RelativeSource = templatedParent,
-                    Converter = new DoubleToLeftMarginConverter()
-                });
+            // Aligné avec le curseur : la grille a Margin = Padding et les
+            // champs ont Padding = 0, donc le texte est à 1x Padding. Le
+            // watermark (dans la même grille, sans marge ni Padding)
+            // commence exactement au même endroit. (Le Padding.Left ajouté
+            // en v16 le poussait à 2x Padding, trop à droite — retiré.)
 
             // Le watermark est DERRIÈRE les deux champs : les points / le
             // texte et le curseur peignent par-dessus, toujours visibles.
@@ -4832,6 +4889,53 @@ namespace CustomObjectWPF.Model
                 new PropertyMetadata(null, OnClearIconColorChanged));
 
         /// <summary>
+        /// Fond du cercle derrière la loupe quand la souris est dessus.
+        /// null (défaut) = le voile gris par défaut (noir à 12 %).
+        /// Mets une couleur (ex. : "LightBlue") pour changer le survol,
+        /// Transparent pour l'enlever. Comme HoverBackground du ButtonCustom.
+        /// </summary>
+        public static readonly DependencyProperty SearchIconHoverBackgroundProperty =
+            DependencyProperty.Register(
+                nameof(SearchIconHoverBackground),
+                typeof(Brush),
+                typeof(SearchBoxCustom),
+                new PropertyMetadata(null, OnSearchIconHoverBackgroundChanged));
+
+        public Brush? SearchIconHoverBackground
+        {
+            get => (Brush?)GetValue(SearchIconHoverBackgroundProperty);
+            set => SetValue(SearchIconHoverBackgroundProperty, value);
+        }
+
+        private static void OnSearchIconHoverBackgroundChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if (d is SearchBoxCustom control) control.RefreshSearchButtonBackground();
+        }
+
+        /// <summary>
+        /// Fond du cercle derrière le X quand la souris est dessus.
+        /// null (défaut) = le voile gris par défaut (noir à 12 %).
+        /// Comme SearchIconHoverBackground, mais pour le bouton effacer.
+        /// </summary>
+        public static readonly DependencyProperty ClearIconHoverBackgroundProperty =
+            DependencyProperty.Register(
+                nameof(ClearIconHoverBackground),
+                typeof(Brush),
+                typeof(SearchBoxCustom),
+                new PropertyMetadata(null, OnClearIconHoverBackgroundChanged));
+
+        public Brush? ClearIconHoverBackground
+        {
+            get => (Brush?)GetValue(ClearIconHoverBackgroundProperty);
+            set => SetValue(ClearIconHoverBackgroundProperty, value);
+        }
+
+        private static void OnClearIconHoverBackgroundChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if (d is SearchBoxCustom control) control.RefreshClearButtonBackground();
+        }
+
+        /// <summary>
         /// Image de la loupe. Défaut = la loupe noire intégrée en base64
         /// (voir la région "Images intégrées"). Mets ton propre PNG pour
         /// la remplacer. Teintée par IconColor (couleur pleine seulement ;
@@ -4987,6 +5091,9 @@ namespace CustomObjectWPF.Model
         #region Champs
 
         private Controls.Button? _clearButton;
+        private Controls.Button? _searchButton;
+        private Controls.Border? _searchButtonBorder;
+        private Controls.Border? _clearButtonBorder;
 
         private Controls.Image? _searchImage;
         private Controls.Image? _clearImage;
@@ -5175,9 +5282,12 @@ namespace CustomObjectWPF.Model
             // Texte noir par défaut : le fond du champ est blanc par défaut,
             // donc le texte (et le curseur, et les points du mot de passe)
             // doit être sombre, sinon il est invisible dans une fenêtre
-            // sombre (Foreground clair hérité sur fond blanc). Un Style ou
-            // une valeur en XAML reprend le dessus normalement.
-            SetCurrentValue(ForegroundProperty, Media.Brushes.Black);
+            // sombre (Foreground clair hérité sur fond blanc). Posé avec
+            // SetValue (valeur locale) : SetCurrentValue perd contre
+            // l'héritage, il fallait écrire Foreground="Black" en XAML
+            // pour le corriger. Un attribut en XAML reprend le dessus
+            // (posé après le constructeur) ; un Setter de Style, non.
+            SetValue(ForegroundProperty, Media.Brushes.Black);
 
             Template = BuildTemplate();
             RefreshNeon(); // fallback sur le contrôle tant que le template n'est pas appliqué
@@ -5227,28 +5337,32 @@ namespace CustomObjectWPF.Model
             }
         }
 
-        private void SearchImage_MouseEnter(object sender, MouseEventArgs e)
+        private void SearchButton_MouseEnter(object sender, MouseEventArgs e)
         {
             _isSearchIconHovered = true;
             RefreshSearchIcon();
+            RefreshSearchButtonBackground();
         }
 
-        private void SearchImage_MouseLeave(object sender, MouseEventArgs e)
+        private void SearchButton_MouseLeave(object sender, MouseEventArgs e)
         {
             _isSearchIconHovered = false;
             RefreshSearchIcon();
+            RefreshSearchButtonBackground();
         }
 
         private void ClearButton_MouseEnter(object sender, MouseEventArgs e)
         {
             _isClearIconHovered = true;
             RefreshClearIcon();
+            RefreshClearButtonBackground();
         }
 
         private void ClearButton_MouseLeave(object sender, MouseEventArgs e)
         {
             _isClearIconHovered = false;
             RefreshClearIcon();
+            RefreshClearButtonBackground();
         }
 
         #endregion
@@ -5345,6 +5459,31 @@ namespace CustomObjectWPF.Model
             _clearImage.Visibility = ClearIcon == null ? Visibility.Collapsed : Visibility.Visible;
         }
 
+        // Voile gris par défaut derrière la loupe / le X au survol
+        // (noir à 12 % — visible sur fond clair, le champ est blanc
+        // par défaut). Utilisé quand SearchIconHoverBackground ou
+        // ClearIconHoverBackground vaut null.
+        private static readonly Brush DefaultIconHoverBackground =
+            new SolidColorBrush(Color.FromArgb(0x1F, 0x00, 0x00, 0x00));
+
+        // Fond du cercle derrière la loupe : le survol, ou transparent.
+        private void RefreshSearchButtonBackground()
+        {
+            if (_searchButtonBorder == null) return;
+            _searchButtonBorder.Background = _isSearchIconHovered
+                ? (SearchIconHoverBackground ?? DefaultIconHoverBackground)
+                : Media.Brushes.Transparent;
+        }
+
+        // Fond du cercle derrière le X : le survol, ou transparent.
+        private void RefreshClearButtonBackground()
+        {
+            if (_clearButtonBorder == null) return;
+            _clearButtonBorder.Background = _isClearIconHovered
+                ? (ClearIconHoverBackground ?? DefaultIconHoverBackground)
+                : Media.Brushes.Transparent;
+        }
+
         #endregion
 
         #region Template et événements
@@ -5381,27 +5520,29 @@ namespace CustomObjectWPF.Model
 
             // On se désabonne d'abord (sécurité si le template est réappliqué).
             if (_clearButton != null) _clearButton.Click -= ClearButton_Click;
-            if (_searchImage != null) { _searchImage.MouseEnter -= SearchImage_MouseEnter; _searchImage.MouseLeave -= SearchImage_MouseLeave; }
-            if (_searchImage != null) _searchImage.MouseLeftButtonUp -= SearchImage_MouseLeftButtonUp;
+            if (_searchButton != null) _searchButton.Click -= SearchButton_Click;
+            if (_searchButton != null) { _searchButton.MouseEnter -= SearchButton_MouseEnter; _searchButton.MouseLeave -= SearchButton_MouseLeave; }
             if (_clearButton != null) { _clearButton.MouseEnter -= ClearButton_MouseEnter; _clearButton.MouseLeave -= ClearButton_MouseLeave; }
 
             _clearButton = Template.FindName("clearButton", this) as Controls.Button;
+            _searchButton = Template.FindName("searchButton", this) as Controls.Button;
             _glowBorder = Template.FindName("glowBorder", this) as Border;
             _searchImage = Template.FindName("searchImage", this) as Controls.Image;
             _clearImage = Template.FindName("clearImage", this) as Controls.Image;
+            // Les bordures de survol vivent dans le template des boutons :
+            // on les retrouve via le Template du bouton, pas celui du contrôle.
+            _searchButtonBorder = _searchButton?.Template.FindName("searchButtonBorder", _searchButton) as Controls.Border;
+            _clearButtonBorder = _clearButton?.Template.FindName("clearButtonBorder", _clearButton) as Controls.Border;
 
             if (_clearButton != null) _clearButton.Click += ClearButton_Click;
-            if (_searchImage != null) { _searchImage.MouseEnter += SearchImage_MouseEnter; _searchImage.MouseLeave += SearchImage_MouseLeave; }
-            if (_searchImage != null)
-            {
-                _searchImage.MouseLeftButtonUp += SearchImage_MouseLeftButtonUp;
-                // La loupe est cliquable : on le montre avec la main.
-                _searchImage.Cursor = System.Windows.Input.Cursors.Hand;
-            }
+            if (_searchButton != null) _searchButton.Click += SearchButton_Click;
+            if (_searchButton != null) { _searchButton.MouseEnter += SearchButton_MouseEnter; _searchButton.MouseLeave += SearchButton_MouseLeave; }
             if (_clearButton != null) { _clearButton.MouseEnter += ClearButton_MouseEnter; _clearButton.MouseLeave += ClearButton_MouseLeave; }
 
             RefreshSearchIcon();
             RefreshClearIcon();
+            RefreshSearchButtonBackground();
+            RefreshClearButtonBackground();
             RefreshNeon();
         }
 
@@ -5413,7 +5554,7 @@ namespace CustomObjectWPF.Model
 
         // Clic sur la loupe : l'utilisateur y attache sa propre action
         // (ex. : lancer la recherche), comme un Click de bouton.
-        private void SearchImage_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        private void SearchButton_Click(object sender, RoutedEventArgs e)
         {
             RaiseEvent(new RoutedEventArgs(SearchIconClickedEvent, this));
             Focus();
@@ -5497,18 +5638,30 @@ namespace CustomObjectWPF.Model
             grid.AppendChild(colText);
             grid.AppendChild(colClear);
 
-            // Loupe : l'image intégrée en base64 (noire, 512x512, teintée
-            // en code par IconColor — voir RefreshSearchIcon). Rendu net :
-            // HighQuality, comme l'œil.
+            // Bouton loupe : comme le bouton effacer — un vrai bouton
+            // (28x28, rond), cliquable, avec un fond de survol. L'image
+            // intégrée en base64 (noire, 512x512, teintée en code par
+            // IconColor — voir RefreshSearchIcon) est son Contenu.
+            // Rendu net : HighQuality, comme l'œil.
+            FrameworkElementFactory searchButton = new(typeof(Controls.Button));
+            searchButton.Name = "searchButton";
+            searchButton.SetValue(Controls.Grid.ColumnProperty, 0);
+            searchButton.SetValue(FrameworkElement.FocusableProperty, false);
+            searchButton.SetValue(FrameworkElement.WidthProperty, 28.0);
+            searchButton.SetValue(FrameworkElement.HeightProperty, 28.0);
+            searchButton.SetValue(FrameworkElement.VerticalAlignmentProperty, VerticalAlignment.Center);
+            searchButton.SetValue(FrameworkElement.MarginProperty, new Thickness(2, 0, 6, 0));
+            searchButton.SetValue(FrameworkElement.CursorProperty, System.Windows.Input.Cursors.Hand);
+            searchButton.SetValue(Controls.Control.TemplateProperty, BuildSearchButtonTemplate());
             FrameworkElementFactory searchImage = new(typeof(Controls.Image));
             searchImage.Name = "searchImage";
-            searchImage.SetValue(Controls.Grid.ColumnProperty, 0);
             searchImage.SetValue(FrameworkElement.WidthProperty, 16.0);
             searchImage.SetValue(FrameworkElement.HeightProperty, 16.0);
+            searchImage.SetValue(FrameworkElement.HorizontalAlignmentProperty, WPF.HorizontalAlignment.Center);
             searchImage.SetValue(FrameworkElement.VerticalAlignmentProperty, VerticalAlignment.Center);
-            searchImage.SetValue(FrameworkElement.MarginProperty, new Thickness(2, 0, 6, 0));
             searchImage.SetValue(Controls.Image.StretchProperty, Stretch.Uniform);
             searchImage.SetValue(RenderOptions.BitmapScalingModeProperty, BitmapScalingMode.HighQuality);
+            searchButton.AppendChild(searchImage);
 
             // Texte d'aide : visible seulement quand le champ est vide
             // (trigger sur Text = ""). Ne capte pas les clics : on peut
@@ -5558,6 +5711,8 @@ namespace CustomObjectWPF.Model
             clearButton.SetValue(Controls.Grid.ColumnProperty, 2);
             clearButton.SetValue(FrameworkElement.FocusableProperty, false);
             clearButton.SetValue(FrameworkElement.WidthProperty, 28.0);
+            clearButton.SetValue(FrameworkElement.HeightProperty, 28.0);
+            clearButton.SetValue(FrameworkElement.VerticalAlignmentProperty, VerticalAlignment.Center);
             clearButton.SetValue(Controls.Control.TemplateProperty, BuildClearButtonTemplate());
             // Contenu du bouton : l'image du X intégrée en base64 (noire,
             // 512x512, teintée en code par ClearIconColor — voir
@@ -5572,7 +5727,7 @@ namespace CustomObjectWPF.Model
             clearImage.SetValue(RenderOptions.BitmapScalingModeProperty, BitmapScalingMode.HighQuality);
             clearButton.AppendChild(clearImage);
 
-            grid.AppendChild(searchImage);
+            grid.AppendChild(searchButton);
             grid.AppendChild(watermark);
             grid.AppendChild(scroll);
             grid.AppendChild(clearButton);
@@ -5646,6 +5801,11 @@ namespace CustomObjectWPF.Model
             FrameworkElementFactory border = new(typeof(Controls.Border));
             border.Name = "clearButtonBorder";
             border.SetValue(Controls.Border.BackgroundProperty, Media.Brushes.Transparent);
+            // Ronde (cercle) : le bouton fait 28x28, CornerRadius 1000 =
+            // complètement arrondi. Le fond de survol est posé en code
+            // (RefreshClearButtonBackground), pas par un trigger, pour
+            // qu'on puisse le changer avec ClearIconHoverBackground.
+            border.SetValue(Controls.Border.CornerRadiusProperty, new CornerRadius(1000));
 
             // NOTE : "Content" en chaîne, pas nameof(Content) : la classe
             // SearchBoxCustom n'a pas de propriété Content (c'est le Button,
@@ -5665,19 +5825,37 @@ namespace CustomObjectWPF.Model
             Controls.ControlTemplate template = new(typeof(Controls.Button));
             template.VisualTree = border;
 
-            // Survol : léger voile gris (visible sur fond clair : le champ est blanc par défaut).
-            Trigger hoverTrigger = new()
-            {
-                Property = UIElement.IsMouseOverProperty,
-                Value = true
-            };
-            hoverTrigger.Setters.Add(new Setter
-            {
-                Property = Controls.Border.BackgroundProperty,
-                TargetName = "clearButtonBorder",
-                Value = new SolidColorBrush(Color.FromArgb(0x1F, 0x00, 0x00, 0x00))
-            });
-            template.Triggers.Add(hoverTrigger);
+            return template;
+        }
+
+        /// <summary>
+        /// Template du bouton loupe : comme le bouton effacer — fond
+        /// transparent, bordure ronde (cercle, 28x28). La loupe est le
+        /// Contenu du bouton, affiché par le ContentPresenter. Le fond
+        /// de survol est posé en code (RefreshSearchButtonBackground)
+        /// pour qu'on puisse le changer avec SearchIconHoverBackground.
+        /// </summary>
+        private static Controls.ControlTemplate BuildSearchButtonTemplate()
+        {
+            FrameworkElementFactory border = new(typeof(Controls.Border));
+            border.Name = "searchButtonBorder";
+            border.SetValue(Controls.Border.BackgroundProperty, Media.Brushes.Transparent);
+            border.SetValue(Controls.Border.CornerRadiusProperty, new CornerRadius(1000));
+
+            FrameworkElementFactory presenter = new(typeof(Controls.ContentPresenter));
+            presenter.SetBinding(
+                Controls.ContentPresenter.ContentProperty,
+                new WPF.Data.Binding("Content")
+                {
+                    RelativeSource = new WPF.Data.RelativeSource(WPF.Data.RelativeSourceMode.TemplatedParent)
+                });
+            presenter.SetValue(FrameworkElement.HorizontalAlignmentProperty, WPF.HorizontalAlignment.Center);
+            presenter.SetValue(FrameworkElement.VerticalAlignmentProperty, VerticalAlignment.Center);
+
+            border.AppendChild(presenter);
+
+            Controls.ControlTemplate template = new(typeof(Controls.Button));
+            template.VisualTree = border;
 
             return template;
         }
@@ -5686,6 +5864,21 @@ namespace CustomObjectWPF.Model
     }
 
     #endregion
+
+    /// <summary>
+    /// Symboles des boutons +/− du NumericUpDownCustom. Comme Visibility
+    /// en WPF : des options prédéfinies, pas du texte libre (les triangles
+    /// ne se tapent pas facilement au clavier).
+    /// Triangles = "▲" / "▼" (défaut), PlusMinus = "+" / "-",
+    /// Chevrons = "˄" / "˅", Arrows = "↑" / "↓".
+    /// </summary>
+    public enum StepSymbols
+    {
+        Triangles,
+        PlusMinus,
+        Chevrons,
+        Arrows
+    }
 
     #region NumericUpDownCustom
 
@@ -5757,6 +5950,28 @@ namespace CustomObjectWPF.Model
         private static void OnFormatChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             if (d is NumericUpDownCustom control) control.SyncTextFromValue();
+        }
+
+        /// <summary>
+        /// Symboles des boutons +/−. Défaut : Triangles ("▲" / "▼").
+        /// PlusMinus = "+" / "-", Chevrons = "˄" / "˅", Arrows = "↑" / "↓".
+        /// </summary>
+        public static readonly DependencyProperty SymbolsProperty =
+            DependencyProperty.Register(
+                nameof(Symbols),
+                typeof(StepSymbols),
+                typeof(NumericUpDownCustom),
+                new PropertyMetadata(StepSymbols.Triangles, OnSymbolsChanged));
+
+        public StepSymbols Symbols
+        {
+            get => (StepSymbols)GetValue(SymbolsProperty);
+            set => SetValue(SymbolsProperty, value);
+        }
+
+        private static void OnSymbolsChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if (d is NumericUpDownCustom control) control.SyncSymbols();
         }
 
         /// <summary>
@@ -5871,6 +6086,8 @@ namespace CustomObjectWPF.Model
         private Controls.TextBox? _valueBox;
         private RepeatButton? _upButton;
         private RepeatButton? _downButton;
+        private Controls.TextBlock? _upText;
+        private Controls.TextBlock? _downText;
 
         // Bordure du champ, pour la lueur néon (voir RefreshNeon).
         private Border? _glowBorder;
@@ -5895,9 +6112,12 @@ namespace CustomObjectWPF.Model
             // Texte noir par défaut : le fond du champ est blanc par défaut,
             // donc le texte (et le curseur, et les points du mot de passe)
             // doit être sombre, sinon il est invisible dans une fenêtre
-            // sombre (Foreground clair hérité sur fond blanc). Un Style ou
-            // une valeur en XAML reprend le dessus normalement.
-            SetCurrentValue(ForegroundProperty, Media.Brushes.Black);
+            // sombre (Foreground clair hérité sur fond blanc). Posé avec
+            // SetValue (valeur locale) : SetCurrentValue perd contre
+            // l'héritage, il fallait écrire Foreground="Black" en XAML
+            // pour le corriger. Un attribut en XAML reprend le dessus
+            // (posé après le constructeur) ; un Setter de Style, non.
+            SetValue(ForegroundProperty, Media.Brushes.Black);
 
             Template = BuildTemplate();
             RefreshNeon(); // fallback sur le contrôle tant que le template n'est pas appliqué
@@ -6012,6 +6232,8 @@ namespace CustomObjectWPF.Model
             _valueBox = Template.FindName("valueBox", this) as Controls.TextBox;
             _upButton = Template.FindName("upButton", this) as RepeatButton;
             _downButton = Template.FindName("downButton", this) as RepeatButton;
+            _upText = Template.FindName("upText", this) as Controls.TextBlock;
+            _downText = Template.FindName("downText", this) as Controls.TextBlock;
             _glowBorder = Template.FindName("glowBorder", this) as Border;
 
             if (_valueBox != null)
@@ -6025,7 +6247,33 @@ namespace CustomObjectWPF.Model
             // État initial : la valeur posée en XAML/code avant le
             // chargement doit remplir le champ.
             SyncTextFromValue();
+            SyncSymbols();
             RefreshNeon();
+        }
+
+        // Met à jour les symboles des boutons selon Symbols.
+        private void SyncSymbols()
+        {
+            if (_upText == null || _downText == null) return;
+            switch (Symbols)
+            {
+                case StepSymbols.PlusMinus:
+                    _upText.Text = "+";
+                    _downText.Text = "-";
+                    break;
+                case StepSymbols.Chevrons:
+                    _upText.Text = "˄";
+                    _downText.Text = "˅";
+                    break;
+                case StepSymbols.Arrows:
+                    _upText.Text = "↑";
+                    _downText.Text = "↓";
+                    break;
+                default: // Triangles
+                    _upText.Text = "▲";
+                    _downText.Text = "▼";
+                    break;
+            }
         }
 
         private void UpButton_Click(object sender, RoutedEventArgs e)
@@ -6207,6 +6455,7 @@ namespace CustomObjectWPF.Model
             upButton.SetValue(FrameworkElement.FocusableProperty, false);
             upButton.SetValue(Controls.Control.TemplateProperty, BuildStepButtonTemplate());
             FrameworkElementFactory upText = new(typeof(Controls.TextBlock));
+            upText.Name = "upText";
             upText.SetValue(Controls.TextBlock.TextProperty, "▲");
             upText.SetValue(Controls.TextBlock.FontSizeProperty, 9.0);
             upText.SetValue(FrameworkElement.HorizontalAlignmentProperty, WPF.HorizontalAlignment.Center);
@@ -6222,6 +6471,7 @@ namespace CustomObjectWPF.Model
             downButton.SetValue(FrameworkElement.FocusableProperty, false);
             downButton.SetValue(Controls.Control.TemplateProperty, BuildStepButtonTemplate());
             FrameworkElementFactory downText = new(typeof(Controls.TextBlock));
+            downText.Name = "downText";
             downText.SetValue(Controls.TextBlock.TextProperty, "▼");
             downText.SetValue(Controls.TextBlock.FontSizeProperty, 9.0);
             downText.SetValue(FrameworkElement.HorizontalAlignmentProperty, WPF.HorizontalAlignment.Center);
@@ -6620,9 +6870,12 @@ namespace CustomObjectWPF.Model
             // Texte noir par défaut : le fond du champ est blanc par défaut,
             // donc le texte (et le curseur, et les points du mot de passe)
             // doit être sombre, sinon il est invisible dans une fenêtre
-            // sombre (Foreground clair hérité sur fond blanc). Un Style ou
-            // une valeur en XAML reprend le dessus normalement.
-            SetCurrentValue(ForegroundProperty, Media.Brushes.Black);
+            // sombre (Foreground clair hérité sur fond blanc). Posé avec
+            // SetValue (valeur locale) : SetCurrentValue perd contre
+            // l'héritage, il fallait écrire Foreground="Black" en XAML
+            // pour le corriger. Un attribut en XAML reprend le dessus
+            // (posé après le constructeur) ; un Setter de Style, non.
+            SetValue(ForegroundProperty, Media.Brushes.Black);
 
             Template = BuildTemplate();
             RefreshNeon(); // fallback sur le contrôle tant que le template n'est pas appliqué
@@ -6893,7 +7146,13 @@ namespace CustomObjectWPF.Model
                 Property = Controls.Control.ForegroundProperty,
                 Value = new WPF.Data.Binding(nameof(SelectedItemForeground)) { Source = this }
             });
-            // Survolé : fond bleu très clair, texte inchangé (noir par défaut) : lisible.
+            // Survolé : fond bleu très clair + texte noir. Le texte DOIT
+            // devenir noir : sinon un texte blanc (ex. : la navigation,
+            // Foreground="White" sur fond sombre) resterait blanc sur le
+            // fond clair du survol = illisible. Quand la souris part, le
+            // texte reprend sa couleur normale (le setter se retire tout
+            // seul). La sélection gagne toujours sur le survol (v16) : un
+            // élément choisi survolé garde son fond et son texte.
             Trigger hoverTrigger = new()
             {
                 Property = UIElement.IsMouseOverProperty,
@@ -6905,6 +7164,11 @@ namespace CustomObjectWPF.Model
                 TargetName = "itemBorder",
                 Value = new SolidColorBrush(
                     (Color)ColorConverter.ConvertFromString("#FFE5F1FB"))
+            });
+            hoverTrigger.Setters.Add(new Setter
+            {
+                Property = Controls.Control.ForegroundProperty,
+                Value = Media.Brushes.Black
             });
             itemTemplate.Triggers.Add(hoverTrigger);
 

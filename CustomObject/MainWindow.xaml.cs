@@ -11,7 +11,9 @@ using CustomObjectWPF.Model;
 namespace Vitrine
 {
     /// <summary>
-    /// Vitrine de navigation v13 : une page par contrôle, un exemple par propriété.
+    /// Vitrine de navigation v21 : une page par contrôle, un exemple par propriété,
+    /// plus un bloc « Code à copier-coller » par contrôle (toutes les propriétés).
+    /// Cartes d'exemples claires : les contrôles y montrent leurs vrais défauts.
     /// Les images des exemples SearchIcon / ClearIcon / RevealImage / HideImage
     /// sont intégrées en base64 dans ce fichier (comme les yeux dans la librairie),
     /// donc la vitrine tourne seule, sans dossier d'images.
@@ -39,6 +41,17 @@ namespace Vitrine
         public MainWindow()
         {
             InitializeComponent();
+
+            // La molette défile la page même quand la souris survole un
+            // champ de texte : un TextBox / PasswordBox avale l'événement
+            // molette, la page ne défilait plus. On le reprend ici
+            // (Preview = tunnel, avant que le champ le voie) et on fait
+            // défiler le ScrollViewer de la page.
+            contentScroll.PreviewMouseWheel += (sender, e) =>
+            {
+                contentScroll.ScrollToVerticalOffset(contentScroll.VerticalOffset - e.Delta);
+                e.Handled = true;
+            };
 
             foreach (string nom in _navItems)
             {
@@ -81,7 +94,72 @@ namespace Vitrine
             searchDemo.Search += SearchDemo_Search;
             lstResultats.ItemsSource = _documents;
 
+            RemplirCodesCopierColler();
             ShowPage("Accueil");
+        }
+
+
+        // Code à copier-coller : pour chaque contrôle, le XAML complet avec
+        // TOUTES ses propriétés (valeurs d'exemple = les défauts, sauf quand
+        // la valeur montre mieux la propriété). Le texte est posé ici (en
+        // C#) pour éviter d'échapper les < > " dans le XAML.
+        private void RemplirCodesCopierColler()
+        {
+            code_ButtonCustom.Text = @"<custom:ButtonCustom Content=""Valider"" Width=""140"" Height=""42"" CornerRadius=""15""
+                     HoverBackground=""DarkBlue"" PressedBackground=""DarkRed""
+                     Icon=""Images/loupe.png"" IconWidth=""20"" IconSpacing=""8""
+                     Neon=""True"" NeonColor=""Cyan"" NeonRadius=""20"" />";
+            code_CheckBoxCustom.Text = @"<custom:CheckBoxCustom Content=""Se souvenir de moi"" IsChecked=""True"" CheckColor=""Black""
+                       BoxSize=""14"" BoxSpacing=""5"" BorderHover=""#FF2997DE"" CornerRadius=""0""
+                       Neon=""True"" NeonColor=""Cyan"" NeonRadius=""20"" />";
+            code_ToggleSwitchCustom.Text = @"<custom:ToggleSwitchCustom IsChecked=""True"" OnBrush=""#FF00D1FF"" OffBrush=""#FF555555""
+                           ThumbBrush=""White"" Neon=""True"" NeonColor=""Cyan"" NeonRadius=""20"" />";
+            code_CardCustom.Text = @"<custom:CardCustom Title=""Paramètres"" TitleForeground=""Black"" TitleFontSize=""14""
+                   TitleFontWeight=""SemiBold"" CornerRadius=""0"" Neon=""True""
+                   NeonColor=""Cyan"" NeonRadius=""20"" Width=""320"">
+    <TextBlock Text=""Contenu de la carte..."" />
+</custom:CardCustom>";
+            code_SliderCustom.Text = @"<custom:SliderCustom Value=""30"" Minimum=""0"" Maximum=""100"" TrackBrush=""#FF555555""
+                     ThumbBrush=""#FF00D1FF"" TrackHeight=""6"" ThumbSize=""18""
+                     TrackCornerRadius=""1000"" ThumbCornerRadius=""1000""
+                     Neon=""True"" NeonColor=""Cyan"" NeonRadius=""20"" />";
+            code_ListBoxCustom.Text = @"<custom:ListBoxCustom Width=""320"" Height=""140"" CornerRadius=""10"" ItemCornerRadius=""8""
+                      SelectedItemBackground=""#FF00D1FF"" SelectedItemForeground=""Black""
+                      SelectedItemBorderBrush=""#FF00D1FF"" SelectedItem=""Code"">
+    <ListBoxItem>Documents</ListBoxItem>
+    <ListBoxItem>Images</ListBoxItem>
+    <ListBoxItem>Code</ListBoxItem>
+</custom:ListBoxCustom>";
+            code_TextBoxCustom.Text = @"<custom:TextBoxCustom Text=""Bonjour"" Watermark=""Tape ton nom..."" WatermarkColor=""#FF808080""
+                      CornerRadius=""10"" FocusedBorderBrush=""DarkBlue""
+                      Neon=""True"" NeonColor=""Cyan"" NeonRadius=""20"" />";
+            code_PasswordBoxCustom.Text = @"<custom:PasswordBoxCustom Password=""secret"" PasswordChar=""•"" MaxLength=""0""
+                          Watermark=""Mot de passe"" WatermarkColor=""#FF808080""
+                          CornerRadius=""10"" FocusedBorderBrush=""DarkBlue""
+                          Neon=""True"" NeonColor=""Cyan"" NeonRadius=""20"" />";
+            code_PasswordRevealCustom.Text = @"<custom:PasswordRevealCustom Password=""secret"" IsPasswordRevealed=""False"" PasswordChar=""•""
+                             MaxLength=""0"" RevealImage=""Images/oeil-ouvert.png""
+                             HideImage=""Images/oeil-ferme.png"" EyeColor=""Black""
+                             EyeHoverColor=""Orange"" EyeWidth=""45"" Watermark=""Mot de passe""
+                             WatermarkColor=""#FF808080"" CornerRadius=""10""
+                             FocusedBorderBrush=""DarkBlue"" Neon=""True"" NeonColor=""Cyan"" NeonRadius=""20"" />";
+            code_SearchBoxCustom.Text = @"<custom:SearchBoxCustom Text="""" Watermark=""Rechercher..."" WatermarkColor=""#FF808080""
+                        IconColor=""Black"" IconHoverColor=""DarkBlue"" ClearIconColor=""Red""
+                        ClearIconHoverColor=""DarkRed"" SearchIconHoverBackground=""LightBlue""
+                        ClearIconHoverBackground=""LightCoral"" SearchIcon=""Images/loupe.png""
+                        ClearIcon=""Images/x.png"" CornerRadius=""10"" FocusedBorderBrush=""DarkBlue""
+                        Neon=""True"" NeonColor=""Cyan"" NeonRadius=""20""
+                        Search=""Recherche_Search"" SearchIconClicked=""Recherche_SearchIconClicked"" />";
+            code_NumericUpDownCustom.Text = @"<custom:NumericUpDownCustom Value=""5"" Minimum=""0"" Maximum=""100"" Increment=""1"" Format=""C2""
+                            Symbols=""PlusMinus""
+                            CornerRadius=""10"" FocusedBorderBrush=""DarkBlue""
+                            Neon=""True"" NeonColor=""Cyan"" NeonRadius=""20"" />";
+            code_ComboBoxCustom.Text = @"<custom:ComboBoxCustom ItemsSource=""{Binding Categories}"" SelectedItem=""{Binding CategorieChoisie}""
+                       DisplayMemberPath=""Nom"" Placeholder=""Choisir..."" PlaceholderColor=""#FF808080""
+                       MaxDropDownHeight=""200"" IsDropDownOpen=""False""
+                       SelectedItemBackground=""#FF00D1FF"" SelectedItemForeground=""Black""
+                       SelectedItemBorderBrush=""#FF00D1FF"" CornerRadius=""10""
+                       FocusedBorderBrush=""DarkBlue"" Neon=""True"" NeonColor=""Cyan"" NeonRadius=""20"" />";
         }
 
         private void ShowPage(string nom)

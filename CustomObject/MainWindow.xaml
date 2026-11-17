@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:custom="clr-namespace:CustomObjectWPF.Model"
         mc:Ignorable="d"
-        Title="Vitrine CustomObjectWPF — v16" Width="1020" Height="860"
+        Title="Vitrine CustomObjectWPF — v21" Width="1020" Height="860"
         Background="#FF1E1E1E" Foreground="#FFEDEDED">
     <Window.Resources>
         <!-- Carte d'un exemple (nom de la propriété + explication + contrôle) -->
@@ -62,7 +62,7 @@
         <Border Grid.Column="0" Background="#FF232323" BorderBrush="#FF333333" BorderThickness="0,0,1,0">
             <StackPanel Margin="16">
                 <TextBlock Text="CustomObjectWPF" FontSize="20" FontWeight="Bold" Foreground="#FF00D1FF" />
-                <TextBlock Text="v13 — 12 contrôles" FontSize="12" Foreground="#FFAAAAAA" Margin="0,2,0,0" />
+                <TextBlock Text="v21 — 12 contrôles" FontSize="12" Foreground="#FFAAAAAA" Margin="0,2,0,0" />
                 <custom:SearchBoxCustom x:Name="navSearch" Watermark="Rechercher un contrôle..." CornerRadius="8" Height="38" FontSize="14" Margin="0,14,0,10" />
                 <custom:ListBoxCustom x:Name="navList" Background="Transparent" BorderThickness="0" FontSize="14" Foreground="White"
                                       SelectedItemBackground="#FF00D1FF" SelectedItemForeground="Black"
@@ -153,7 +153,7 @@
                             </StackPanel>
                         </Border>
                     </UniformGrid>
-                    <TextBlock Text="Librairie v16 — copie CustomObjectWPF.cs dans ton projet, ajoute xmlns:custom=&quot;clr-namespace:CustomObjectWPF.Model&quot; et c'est prêt." FontSize="12" Foreground="#FF888888" TextWrapping="Wrap" Margin="6,10,6,0" />
+                    <TextBlock Text="Librairie v21 — copie CustomObjectWPF.cs dans ton projet, ajoute xmlns:custom=&quot;clr-namespace:CustomObjectWPF.Model&quot; et c'est prêt." FontSize="12" Foreground="#FF888888" TextWrapping="Wrap" Margin="6,10,6,0" />
                 </StackPanel>
 
                 <!-- ===== ButtonCustom ===== -->
@@ -178,35 +178,35 @@
                         <StackPanel>
                             <TextBlock Text="HoverBackground" Style="{StaticResource TitrePropriete}" />
                             <TextBlock Text="Couleur du fond quand la souris passe dessus. Essaie : passe la souris sur le bouton." Style="{StaticResource Description}" />
-                            <custom:ButtonCustom Content="Survole-moi" Width="140" Height="42" FontSize="16" Background="#FF2D2D2D" Foreground="White" HoverBackground="DarkBlue" />
+                            <custom:ButtonCustom Content="Survole-moi" Width="140" Height="42" FontSize="16" HoverBackground="DarkBlue" />
                         </StackPanel>
                     </Border>
                     <Border Style="{StaticResource CarteExemple}">
                         <StackPanel>
                             <TextBlock Text="PressedBackground" Style="{StaticResource TitrePropriete}" />
                             <TextBlock Text="Couleur du fond pendant qu'on tient le clic. Essaie : maintiens le clic sur le bouton." Style="{StaticResource Description}" />
-                            <custom:ButtonCustom Content="Tiens le clic" Width="140" Height="42" FontSize="16" Background="#FF2D2D2D" Foreground="White" PressedBackground="DarkRed" />
+                            <custom:ButtonCustom Content="Tiens le clic" Width="140" Height="42" FontSize="16" PressedBackground="DarkRed" />
                         </StackPanel>
                     </Border>
                     <Border Style="{StaticResource CarteExemple}">
                         <StackPanel>
                             <TextBlock Text="Neon" Style="{StaticResource TitrePropriete}" />
                             <TextBlock Text="Ajoute une lueur autour du bouton. La lueur est derrière le texte, donc le texte reste net." Style="{StaticResource Description}" />
-                            <custom:ButtonCustom Content="Néon" Width="140" Height="42" FontSize="16" Background="#FF2D2D2D" Foreground="White" Neon="True" />
+                            <custom:ButtonCustom Content="Néon" Width="140" Height="42" FontSize="16" Neon="True" />
                         </StackPanel>
                     </Border>
                     <Border Style="{StaticResource CarteExemple}">
                         <StackPanel>
                             <TextBlock Text="NeonColor" Style="{StaticResource TitrePropriete}" />
                             <TextBlock Text="Change la couleur de la lueur. Ici, magenta." Style="{StaticResource Description}" />
-                            <custom:ButtonCustom Content="Néon magenta" Width="160" Height="42" FontSize="16" Background="#FF2D2D2D" Foreground="White" Neon="True" NeonColor="Magenta" />
+                            <custom:ButtonCustom Content="Néon magenta" Width="160" Height="42" FontSize="16" Neon="True" NeonColor="Magenta" />
                         </StackPanel>
                     </Border>
                     <Border Style="{StaticResource CarteExemple}">
                         <StackPanel>
                             <TextBlock Text="NeonRadius" Style="{StaticResource TitrePropriete}" />
                             <TextBlock Text="Change la taille de la lueur (le flou, en px). Ici, 40 : une grosse lueur. Défaut : 20." Style="{StaticResource Description}" />
-                            <custom:ButtonCustom Content="Grosse lueur" Width="160" Height="42" FontSize="16" Background="#FF2D2D2D" Foreground="White" Neon="True" NeonRadius="40" />
+                            <custom:ButtonCustom Content="Grosse lueur" Width="160" Height="42" FontSize="16" Neon="True" NeonRadius="40" />
                         </StackPanel>
                     </Border>
                     <Border Style="{StaticResource CarteExemple}">
@@ -237,6 +237,15 @@
                             <custom:ButtonCustom x:Name="btnIconDemo3" Content="Espacé" Width="220" Height="42" FontSize="16" IconSpacing="20" />
                         </StackPanel>
                     </Border>
+                    <Border Style="{StaticResource CarteExemple}">
+                        <StackPanel>
+                            <TextBlock Text="Code à copier-coller" Style="{StaticResource TitrePropriete}" />
+                            <TextBlock Text="Toutes les propriétés du contrôle, prêtes à copier-coller dans ton XAML." Style="{StaticResource Description}" />
+                            <TextBox x:Name="code_ButtonCustom" IsReadOnly="True" FontFamily="Consolas" FontSize="12"
+                                     AcceptsReturn="True" TextWrapping="Wrap" Background="#FFF5F5F5" Foreground="Black"
+                                     BorderBrush="#FFCCCCCC" BorderThickness="1" Padding="10" />
+                        </StackPanel>
+                    </Border>
                 </StackPanel>
 
                 <!-- ===== CheckBoxCustom ===== -->
@@ -247,70 +256,79 @@
                         <StackPanel>
                             <TextBlock Text="Par défaut" Style="{StaticResource TitrePropriete}" />
                             <TextBlock Text="La case telle quelle, décochée. Clique dessus pour cocher." Style="{StaticResource Description}" />
-                            <custom:CheckBoxCustom Content="Se souvenir de moi" FontSize="16" Foreground="White" />
+                            <custom:CheckBoxCustom Content="Se souvenir de moi" FontSize="16" />
                         </StackPanel>
                     </Border>
                     <Border Style="{StaticResource CarteExemple}">
                         <StackPanel>
                             <TextBlock Text="IsChecked" Style="{StaticResource TitrePropriete}" />
                             <TextBlock Text="Coche la case dès le départ. C'est une propriété de base de WPF." Style="{StaticResource Description}" />
-                            <custom:CheckBoxCustom Content="Déjà cochée" FontSize="16" Foreground="White" IsChecked="True" />
+                            <custom:CheckBoxCustom Content="Déjà cochée" FontSize="16" IsChecked="True" />
                         </StackPanel>
                     </Border>
                     <Border Style="{StaticResource CarteExemple}">
                         <StackPanel>
                             <TextBlock Text="CheckColor" Style="{StaticResource TitrePropriete}" />
                             <TextBlock Text="Change la couleur du crochet. Ici, vert." Style="{StaticResource Description}" />
-                            <custom:CheckBoxCustom Content="Coche verte" FontSize="16" Foreground="White" IsChecked="True" CheckColor="Green" />
+                            <custom:CheckBoxCustom Content="Coche verte" FontSize="16" IsChecked="True" CheckColor="Green" />
                         </StackPanel>
                     </Border>
                     <Border Style="{StaticResource CarteExemple}">
                         <StackPanel>
                             <TextBlock Text="BoxSize" Style="{StaticResource TitrePropriete}" />
                             <TextBlock Text="Change la taille de la case (en px). Ici, 28 : une grosse case. Le crochet s'adapte tout seul." Style="{StaticResource Description}" />
-                            <custom:CheckBoxCustom Content="Grosse case" FontSize="16" Foreground="White" IsChecked="True" BoxSize="28" />
+                            <custom:CheckBoxCustom Content="Grosse case" FontSize="16" IsChecked="True" BoxSize="28" />
                         </StackPanel>
                     </Border>
                     <Border Style="{StaticResource CarteExemple}">
                         <StackPanel>
                             <TextBlock Text="BoxSpacing" Style="{StaticResource TitrePropriete}" />
                             <TextBlock Text="Change l'espace entre la case et le texte (en px). Ici, 20 : un grand espace." Style="{StaticResource Description}" />
-                            <custom:CheckBoxCustom Content="Grand espace" FontSize="16" Foreground="White" IsChecked="True" BoxSpacing="20" />
+                            <custom:CheckBoxCustom Content="Grand espace" FontSize="16" IsChecked="True" BoxSpacing="20" />
                         </StackPanel>
                     </Border>
                     <Border Style="{StaticResource CarteExemple}">
                         <StackPanel>
                             <TextBlock Text="BorderHover" Style="{StaticResource TitrePropriete}" />
                             <TextBlock Text="Couleur de la bordure de la case quand la souris passe dessus. Essaie : survole la case, elle devient rouge." Style="{StaticResource Description}" />
-                            <custom:CheckBoxCustom Content="Survole la case" FontSize="16" Foreground="White" IsChecked="True" BorderHover="Red" />
+                            <custom:CheckBoxCustom Content="Survole la case" FontSize="16" IsChecked="True" BorderHover="Red" />
                         </StackPanel>
                     </Border>
                     <Border Style="{StaticResource CarteExemple}">
                         <StackPanel>
                             <TextBlock Text="CornerRadius" Style="{StaticResource TitrePropriete}" />
                             <TextBlock Text="Arrondit les coins de la case. Ici, 10 : une case bien ronde." Style="{StaticResource Description}" />
-                            <custom:CheckBoxCustom Content="Case ronde" FontSize="16" Foreground="White" IsChecked="True" CornerRadius="10" />
+                            <custom:CheckBoxCustom Content="Case ronde" FontSize="16" IsChecked="True" CornerRadius="10" />
                         </StackPanel>
                     </Border>
                     <Border Style="{StaticResource CarteExemple}">
                         <StackPanel>
                             <TextBlock Text="Neon" Style="{StaticResource TitrePropriete}" />
                             <TextBlock Text="Ajoute une lueur autour de la case." Style="{StaticResource Description}" />
-                            <custom:CheckBoxCustom Content="Néon" FontSize="16" Foreground="White" IsChecked="True" Neon="True" />
+                            <custom:CheckBoxCustom Content="Néon" FontSize="16" IsChecked="True" Neon="True" />
                         </StackPanel>
                     </Border>
                     <Border Style="{StaticResource CarteExemple}">
                         <StackPanel>
                             <TextBlock Text="NeonColor" Style="{StaticResource TitrePropriete}" />
                             <TextBlock Text="Change la couleur de la lueur. Ici, magenta." Style="{StaticResource Description}" />
-                            <custom:CheckBoxCustom Content="Néon magenta" FontSize="16" Foreground="White" IsChecked="True" Neon="True" NeonColor="Magenta" />
+                            <custom:CheckBoxCustom Content="Néon magenta" FontSize="16" IsChecked="True" Neon="True" NeonColor="Magenta" />
                         </StackPanel>
                     </Border>
                     <Border Style="{StaticResource CarteExemple}">
                         <StackPanel>
                             <TextBlock Text="NeonRadius" Style="{StaticResource TitrePropriete}" />
                             <TextBlock Text="Change la taille de la lueur. Ici, 30 : une grosse lueur. Défaut : 20." Style="{StaticResource Description}" />
-                            <custom:CheckBoxCustom Content="Grosse lueur" FontSize="16" Foreground="White" IsChecked="True" Neon="True" NeonRadius="30" />
+                            <custom:CheckBoxCustom Content="Grosse lueur" FontSize="16" IsChecked="True" Neon="True" NeonRadius="30" />
+                        </StackPanel>
+                    </Border>
+                    <Border Style="{StaticResource CarteExemple}">
+                        <StackPanel>
+                            <TextBlock Text="Code à copier-coller" Style="{StaticResource TitrePropriete}" />
+                            <TextBlock Text="Toutes les propriétés du contrôle, prêtes à copier-coller dans ton XAML." Style="{StaticResource Description}" />
+                            <TextBox x:Name="code_CheckBoxCustom" IsReadOnly="True" FontFamily="Consolas" FontSize="12"
+                                     AcceptsReturn="True" TextWrapping="Wrap" Background="#FFF5F5F5" Foreground="Black"
+                                     BorderBrush="#FFCCCCCC" BorderThickness="1" Padding="10" />
                         </StackPanel>
                     </Border>
                 </StackPanel>
@@ -323,56 +341,65 @@
                         <StackPanel>
                             <TextBlock Text="Éteint (par défaut)" Style="{StaticResource TitrePropriete}" />
                             <TextBlock Text="L'interrupteur tel quel, éteint. Clique dessus pour l'allumer." Style="{StaticResource Description}" />
-                            <custom:ToggleSwitchCustom FontSize="16" Foreground="White" />
+                            <custom:ToggleSwitchCustom FontSize="16" />
                         </StackPanel>
                     </Border>
                     <Border Style="{StaticResource CarteExemple}">
                         <StackPanel>
                             <TextBlock Text="IsChecked" Style="{StaticResource TitrePropriete}" />
                             <TextBlock Text="Allume l'interrupteur dès le départ. C'est une propriété de base de WPF." Style="{StaticResource Description}" />
-                            <custom:ToggleSwitchCustom FontSize="16" Foreground="White" IsChecked="True" />
+                            <custom:ToggleSwitchCustom FontSize="16" IsChecked="True" />
                         </StackPanel>
                     </Border>
                     <Border Style="{StaticResource CarteExemple}">
                         <StackPanel>
                             <TextBlock Text="OnBrush" Style="{StaticResource TitrePropriete}" />
                             <TextBlock Text="Couleur du fond quand l'interrupteur est allumé. Ici, vert." Style="{StaticResource Description}" />
-                            <custom:ToggleSwitchCustom FontSize="16" Foreground="White" IsChecked="True" OnBrush="Green" />
+                            <custom:ToggleSwitchCustom FontSize="16" IsChecked="True" OnBrush="Green" />
                         </StackPanel>
                     </Border>
                     <Border Style="{StaticResource CarteExemple}">
                         <StackPanel>
                             <TextBlock Text="OffBrush" Style="{StaticResource TitrePropriete}" />
                             <TextBlock Text="Couleur du fond quand l'interrupteur est éteint. Ici, rouge." Style="{StaticResource Description}" />
-                            <custom:ToggleSwitchCustom FontSize="16" Foreground="White" OffBrush="Red" />
+                            <custom:ToggleSwitchCustom FontSize="16" OffBrush="Red" />
                         </StackPanel>
                     </Border>
                     <Border Style="{StaticResource CarteExemple}">
                         <StackPanel>
                             <TextBlock Text="ThumbBrush" Style="{StaticResource TitrePropriete}" />
                             <TextBlock Text="Couleur de la pastille (le cercle qui glisse). Ici, jaune." Style="{StaticResource Description}" />
-                            <custom:ToggleSwitchCustom FontSize="16" Foreground="White" IsChecked="True" ThumbBrush="Yellow" />
+                            <custom:ToggleSwitchCustom FontSize="16" IsChecked="True" ThumbBrush="Yellow" />
                         </StackPanel>
                     </Border>
                     <Border Style="{StaticResource CarteExemple}">
                         <StackPanel>
                             <TextBlock Text="Neon" Style="{StaticResource TitrePropriete}" />
                             <TextBlock Text="Ajoute une lueur autour de l'interrupteur." Style="{StaticResource Description}" />
-                            <custom:ToggleSwitchCustom FontSize="16" Foreground="White" IsChecked="True" Neon="True" />
+                            <custom:ToggleSwitchCustom FontSize="16" IsChecked="True" Neon="True" />
                         </StackPanel>
                     </Border>
                     <Border Style="{StaticResource CarteExemple}">
                         <StackPanel>
                             <TextBlock Text="NeonColor" Style="{StaticResource TitrePropriete}" />
                             <TextBlock Text="Change la couleur de la lueur. Ici, magenta." Style="{StaticResource Description}" />
-                            <custom:ToggleSwitchCustom FontSize="16" Foreground="White" IsChecked="True" Neon="True" NeonColor="Magenta" />
+                            <custom:ToggleSwitchCustom FontSize="16" IsChecked="True" Neon="True" NeonColor="Magenta" />
                         </StackPanel>
                     </Border>
                     <Border Style="{StaticResource CarteExemple}">
                         <StackPanel>
                             <TextBlock Text="NeonRadius" Style="{StaticResource TitrePropriete}" />
                             <TextBlock Text="Change la taille de la lueur. Ici, 30 : une grosse lueur. Défaut : 20." Style="{StaticResource Description}" />
-                            <custom:ToggleSwitchCustom FontSize="16" Foreground="White" IsChecked="True" Neon="True" NeonRadius="30" />
+                            <custom:ToggleSwitchCustom FontSize="16" IsChecked="True" Neon="True" NeonRadius="30" />
+                        </StackPanel>
+                    </Border>
+                    <Border Style="{StaticResource CarteExemple}">
+                        <StackPanel>
+                            <TextBlock Text="Code à copier-coller" Style="{StaticResource TitrePropriete}" />
+                            <TextBlock Text="Toutes les propriétés du contrôle, prêtes à copier-coller dans ton XAML." Style="{StaticResource Description}" />
+                            <TextBox x:Name="code_ToggleSwitchCustom" IsReadOnly="True" FontFamily="Consolas" FontSize="12"
+                                     AcceptsReturn="True" TextWrapping="Wrap" Background="#FFF5F5F5" Foreground="Black"
+                                     BorderBrush="#FFCCCCCC" BorderThickness="1" Padding="10" />
                         </StackPanel>
                     </Border>
                 </StackPanel>
@@ -385,8 +412,8 @@
                         <StackPanel>
                             <TextBlock Text="Title" Style="{StaticResource TitrePropriete}" />
                             <TextBlock Text="Le titre écrit en haut de la carte. Le contenu va en dessous." Style="{StaticResource Description}" />
-                            <custom:CardCustom Title="Mon titre" Background="#FF404040" TitleForeground="White" CornerRadius="10" Width="320">
-                                <TextBlock Text="Ceci est le contenu de la carte." Foreground="#FFCCCCCC" TextWrapping="Wrap" />
+                            <custom:CardCustom Title="Mon titre" CornerRadius="10" Width="320">
+                                <TextBlock Text="Ceci est le contenu de la carte." TextWrapping="Wrap" />
                             </custom:CardCustom>
                         </StackPanel>
                     </Border>
@@ -394,8 +421,8 @@
                         <StackPanel>
                             <TextBlock Text="TitleFontSize" Style="{StaticResource TitrePropriete}" />
                             <TextBlock Text="Change la taille du titre (en px). Ici, 22 : un gros titre." Style="{StaticResource Description}" />
-                            <custom:CardCustom Title="Gros titre" TitleFontSize="22" Background="#FF404040" TitleForeground="White" CornerRadius="10" Width="320">
-                                <TextBlock Text="Le titre est plus gros que d'habitude." Foreground="#FFCCCCCC" TextWrapping="Wrap" />
+                            <custom:CardCustom Title="Gros titre" TitleFontSize="22" CornerRadius="10" Width="320">
+                                <TextBlock Text="Le titre est plus gros que d'habitude." TextWrapping="Wrap" />
                             </custom:CardCustom>
                         </StackPanel>
                     </Border>
@@ -403,8 +430,8 @@
                         <StackPanel>
                             <TextBlock Text="TitleForeground" Style="{StaticResource TitrePropriete}" />
                             <TextBlock Text="Change la couleur du titre. Ici, vert." Style="{StaticResource Description}" />
-                            <custom:CardCustom Title="Titre vert" TitleForeground="Green" Background="#FF404040" CornerRadius="10" Width="320">
-                                <TextBlock Text="Seul le titre est vert, le contenu ne change pas." Foreground="#FFCCCCCC" TextWrapping="Wrap" />
+                            <custom:CardCustom Title="Titre vert" TitleForeground="Green" CornerRadius="10" Width="320">
+                                <TextBlock Text="Seul le titre est vert, le contenu ne change pas." TextWrapping="Wrap" />
                             </custom:CardCustom>
                         </StackPanel>
                     </Border>
@@ -412,8 +439,8 @@
                         <StackPanel>
                             <TextBlock Text="CornerRadius" Style="{StaticResource TitrePropriete}" />
                             <TextBlock Text="Arrondit les coins de la carte. Ici, 20 : une carte très ronde." Style="{StaticResource Description}" />
-                            <custom:CardCustom Title="Carte ronde" CornerRadius="20" Background="#FF404040" TitleForeground="White" Width="320">
-                                <TextBlock Text="Les coins sont bien arrondis." Foreground="#FFCCCCCC" TextWrapping="Wrap" />
+                            <custom:CardCustom Title="Carte ronde" CornerRadius="20" Width="320">
+                                <TextBlock Text="Les coins sont bien arrondis." TextWrapping="Wrap" />
                             </custom:CardCustom>
                         </StackPanel>
                     </Border>
@@ -421,8 +448,8 @@
                         <StackPanel>
                             <TextBlock Text="Neon" Style="{StaticResource TitrePropriete}" />
                             <TextBlock Text="Ajoute une lueur autour de la carte. Nouveau dans la v13." Style="{StaticResource Description}" />
-                            <custom:CardCustom Title="Carte néon" Background="#FF404040" TitleForeground="White" CornerRadius="10" Width="320" Neon="True">
-                                <TextBlock Text="La lueur est autour de la carte." Foreground="#FFCCCCCC" TextWrapping="Wrap" />
+                            <custom:CardCustom Title="Carte néon" CornerRadius="10" Width="320" Neon="True">
+                                <TextBlock Text="La lueur est autour de la carte." TextWrapping="Wrap" />
                             </custom:CardCustom>
                         </StackPanel>
                     </Border>
@@ -430,8 +457,8 @@
                         <StackPanel>
                             <TextBlock Text="NeonColor" Style="{StaticResource TitrePropriete}" />
                             <TextBlock Text="Change la couleur de la lueur. Ici, magenta." Style="{StaticResource Description}" />
-                            <custom:CardCustom Title="Néon magenta" Background="#FF404040" TitleForeground="White" CornerRadius="10" Width="320" Neon="True" NeonColor="Magenta">
-                                <TextBlock Text="La lueur est magenta." Foreground="#FFCCCCCC" TextWrapping="Wrap" />
+                            <custom:CardCustom Title="Néon magenta" CornerRadius="10" Width="320" Neon="True" NeonColor="Magenta">
+                                <TextBlock Text="La lueur est magenta." TextWrapping="Wrap" />
                             </custom:CardCustom>
                         </StackPanel>
                     </Border>
@@ -439,8 +466,8 @@
                         <StackPanel>
                             <TextBlock Text="NeonRadius" Style="{StaticResource TitrePropriete}" />
                             <TextBlock Text="Change la taille de la lueur. Ici, 30 : une grosse lueur. Défaut : 20." Style="{StaticResource Description}" />
-                            <custom:CardCustom Title="Grosse lueur" Background="#FF404040" TitleForeground="White" CornerRadius="10" Width="320" Neon="True" NeonRadius="30">
-                                <TextBlock Text="La lueur est plus grande." Foreground="#FFCCCCCC" TextWrapping="Wrap" />
+                            <custom:CardCustom Title="Grosse lueur" CornerRadius="10" Width="320" Neon="True" NeonRadius="30">
+                                <TextBlock Text="La lueur est plus grande." TextWrapping="Wrap" />
                             </custom:CardCustom>
                         </StackPanel>
                     </Border>
@@ -448,10 +475,10 @@
                         <StackPanel>
                             <TextBlock Text="Cas d'utilisation : un bouton dans la carte" Style="{StaticResource TitrePropriete}" />
                             <TextBlock Text="Le contenu d'une carte peut être n'importe quoi : du texte, une image, un bouton. Ici, une carte avec un bouton dedans." Style="{StaticResource Description}" />
-                            <custom:CardCustom Title="Actions" Background="#FF404040" TitleForeground="White" CornerRadius="10" Width="320">
+                            <custom:CardCustom Title="Actions" CornerRadius="10" Width="320">
                                 <StackPanel>
-                                    <TextBlock Text="Veux-tu vraiment supprimer ce document ?" Foreground="#FFCCCCCC" TextWrapping="Wrap" Margin="0,0,0,10" />
-                                    <custom:ButtonCustom Content="Supprimer" Width="120" Height="36" FontSize="14" Background="#FF2D2D2D" Foreground="White" PressedBackground="DarkRed" />
+                                    <TextBlock Text="Veux-tu vraiment supprimer ce document ?" TextWrapping="Wrap" Margin="0,0,0,10" />
+                                    <custom:ButtonCustom Content="Supprimer" Width="120" Height="36" FontSize="14" PressedBackground="DarkRed" />
                                 </StackPanel>
                             </custom:CardCustom>
                         </StackPanel>
@@ -460,8 +487,8 @@
                         <StackPanel>
                             <TextBlock Text="TitleFontWeight (nouveau v15)" Style="{StaticResource TitrePropriete}" />
                             <TextBlock Text="La graisse du titre : Normal, SemiBold ou Bold. Ici, Bold : un titre bien gras. Défaut : SemiBold." Style="{StaticResource Description}" />
-                            <custom:CardCustom Title="Titre gras" TitleFontWeight="Bold" Background="#FF404040" TitleForeground="White" CornerRadius="10" Width="320">
-                                <TextBlock Text="Le titre est en gras, le reste ne change pas." Foreground="White" TextWrapping="Wrap" />
+                            <custom:CardCustom Title="Titre gras" TitleFontWeight="Bold" CornerRadius="10" Width="320">
+                                <TextBlock Text="Le titre est en gras, le reste ne change pas." TextWrapping="Wrap" />
                             </custom:CardCustom>
                         </StackPanel>
                     </Border>
@@ -469,9 +496,18 @@
                         <StackPanel>
                             <TextBlock Text="Par défaut (thème blanc)" Style="{StaticResource TitrePropriete}" />
                             <TextBlock Text="Une carte sans aucune couleur : le titre est noir par défaut (nouveau en v14), donc lisible sur fond blanc. C'est le look de base de la librairie : fond blanc, titre noir." Style="{StaticResource Description}" />
-                            <custom:CardCustom Title="Titre par défaut" Background="White" CornerRadius="10" Width="320">
-                                <TextBlock Text="Aucune couleur posée : le titre et le texte sont noirs, lisibles sur le fond blanc." Foreground="Black" TextWrapping="Wrap" />
+                            <custom:CardCustom Title="Titre par défaut" CornerRadius="10" Width="320">
+                                <TextBlock Text="Aucune couleur posée : le titre et le texte sont noirs, lisibles sur le fond blanc." TextWrapping="Wrap" />
                             </custom:CardCustom>
+                        </StackPanel>
+                    </Border>
+                    <Border Style="{StaticResource CarteExemple}">
+                        <StackPanel>
+                            <TextBlock Text="Code à copier-coller" Style="{StaticResource TitrePropriete}" />
+                            <TextBlock Text="Toutes les propriétés du contrôle, prêtes à copier-coller dans ton XAML." Style="{StaticResource Description}" />
+                            <TextBox x:Name="code_CardCustom" IsReadOnly="True" FontFamily="Consolas" FontSize="12"
+                                     AcceptsReturn="True" TextWrapping="Wrap" Background="#FFF5F5F5" Foreground="Black"
+                                     BorderBrush="#FFCCCCCC" BorderThickness="1" Padding="10" />
                         </StackPanel>
                     </Border>
                 </StackPanel>
@@ -569,7 +605,16 @@
                             <TextBlock Text="Valeur en direct" Style="{StaticResource TitrePropriete}" />
                             <TextBlock Text="Cas d'utilisation : la valeur du curseur s'affiche en direct en dessous. Glisse la pastille, le nombre suit." Style="{StaticResource Description}" />
                             <custom:SliderCustom x:Name="sliderDemo" Value="40" Width="320" Height="42" ValueChanged="SliderDemo_ValueChanged" />
-                            <TextBlock x:Name="txtSliderValeur" Text="Valeur: 40" FontSize="14" Foreground="White" Margin="0,8,0,0" />
+                            <TextBlock x:Name="txtSliderValeur" Text="Valeur: 40" FontSize="14" Margin="0,8,0,0" />
+                        </StackPanel>
+                    </Border>
+                    <Border Style="{StaticResource CarteExemple}">
+                        <StackPanel>
+                            <TextBlock Text="Code à copier-coller" Style="{StaticResource TitrePropriete}" />
+                            <TextBlock Text="Toutes les propriétés du contrôle, prêtes à copier-coller dans ton XAML." Style="{StaticResource Description}" />
+                            <TextBox x:Name="code_SliderCustom" IsReadOnly="True" FontFamily="Consolas" FontSize="12"
+                                     AcceptsReturn="True" TextWrapping="Wrap" Background="#FFF5F5F5" Foreground="Black"
+                                     BorderBrush="#FFCCCCCC" BorderThickness="1" Padding="10" />
                         </StackPanel>
                     </Border>
                 </StackPanel>
@@ -582,7 +627,7 @@
                         <StackPanel>
                             <TextBlock Text="Par défaut" Style="{StaticResource TitrePropriete}" />
                             <TextBlock Text="La liste telle quelle. Clique un élément pour le choisir." Style="{StaticResource Description}" />
-                            <custom:ListBoxCustom Width="320" Height="140" FontSize="14" Foreground="Black" SelectedIndex="1">
+                            <custom:ListBoxCustom Width="320" Height="140" FontSize="14" SelectedIndex="1">
                                 <ListBoxItem Content="Documents" />
                                 <ListBoxItem Content="Images" />
                                 <ListBoxItem Content="Code" />
@@ -594,7 +639,7 @@
                         <StackPanel>
                             <TextBlock Text="SelectedItemBackground" Style="{StaticResource TitrePropriete}" />
                             <TextBlock Text="Couleur de fond de l'élément choisi. Ici, bleu foncé." Style="{StaticResource Description}" />
-                            <custom:ListBoxCustom Width="320" Height="140" FontSize="14" Foreground="Black" SelectedIndex="1" SelectedItemBackground="DarkBlue" SelectedItemForeground="White">
+                            <custom:ListBoxCustom Width="320" Height="140" FontSize="14" SelectedIndex="1" SelectedItemBackground="DarkBlue" SelectedItemForeground="White">
                                 <ListBoxItem Content="Documents" />
                                 <ListBoxItem Content="Images" />
                                 <ListBoxItem Content="Code" />
@@ -606,7 +651,7 @@
                         <StackPanel>
                             <TextBlock Text="SelectedItemForeground" Style="{StaticResource TitrePropriete}" />
                             <TextBlock Text="Couleur du texte de l'élément choisi. Ici, rouge foncé." Style="{StaticResource Description}" />
-                            <custom:ListBoxCustom Width="320" Height="140" FontSize="14" Foreground="Black" SelectedIndex="1" SelectedItemForeground="DarkRed">
+                            <custom:ListBoxCustom Width="320" Height="140" FontSize="14" SelectedIndex="1" SelectedItemForeground="DarkRed">
                                 <ListBoxItem Content="Documents" />
                                 <ListBoxItem Content="Images" />
                                 <ListBoxItem Content="Code" />
@@ -618,7 +663,7 @@
                         <StackPanel>
                             <TextBlock Text="SelectedItemBorderBrush" Style="{StaticResource TitrePropriete}" />
                             <TextBlock Text="Couleur de la bordure autour de l'élément choisi. Ici, rouge." Style="{StaticResource Description}" />
-                            <custom:ListBoxCustom Width="320" Height="140" FontSize="14" Foreground="Black" SelectedIndex="1" SelectedItemBorderBrush="Red">
+                            <custom:ListBoxCustom Width="320" Height="140" FontSize="14" SelectedIndex="1" SelectedItemBorderBrush="Red">
                                 <ListBoxItem Content="Documents" />
                                 <ListBoxItem Content="Images" />
                                 <ListBoxItem Content="Code" />
@@ -630,7 +675,7 @@
                         <StackPanel>
                             <TextBlock Text="CornerRadius" Style="{StaticResource TitrePropriete}" />
                             <TextBlock Text="Arrondit les coins de la liste. Ici, 12." Style="{StaticResource Description}" />
-                            <custom:ListBoxCustom Width="320" Height="140" FontSize="14" Foreground="Black" SelectedIndex="1" CornerRadius="12">
+                            <custom:ListBoxCustom Width="320" Height="140" FontSize="14" SelectedIndex="1" CornerRadius="12">
                                 <ListBoxItem Content="Documents" />
                                 <ListBoxItem Content="Images" />
                                 <ListBoxItem Content="Code" />
@@ -642,7 +687,7 @@
                         <StackPanel>
                             <TextBlock Text="ItemCornerRadius" Style="{StaticResource TitrePropriete}" />
                             <TextBlock Text="Arrondit les coins de chaque élément (pas de la liste). Ici, 8." Style="{StaticResource Description}" />
-                            <custom:ListBoxCustom Width="320" Height="140" FontSize="14" Foreground="Black" SelectedIndex="1" ItemCornerRadius="8">
+                            <custom:ListBoxCustom Width="320" Height="140" FontSize="14" SelectedIndex="1" ItemCornerRadius="8">
                                 <ListBoxItem Content="Documents" />
                                 <ListBoxItem Content="Images" />
                                 <ListBoxItem Content="Code" />
@@ -654,7 +699,7 @@
                         <StackPanel>
                             <TextBlock Text="SelectedItem (par valeur)" Style="{StaticResource TitrePropriete}" />
                             <TextBlock Text="Choisir un élément par sa valeur, pas par son numéro. Ici, c'est « Code » qui est choisi dès le départ." Style="{StaticResource Description}" />
-                            <custom:ListBoxCustom Width="320" Height="140" FontSize="14" Foreground="Black" SelectedItem="Code">
+                            <custom:ListBoxCustom Width="320" Height="140" FontSize="14" SelectedItem="Code">
                                 <ListBoxItem Content="Documents" />
                                 <ListBoxItem Content="Images" />
                                 <ListBoxItem Content="Code" />
@@ -666,23 +711,32 @@
                         <StackPanel>
                             <TextBlock Text="Cas d'utilisation : des cartes dans la liste" Style="{StaticResource TitrePropriete}" />
                             <TextBlock Text="Un élément de liste peut contenir n'importe quoi, pas juste du texte. Ici, chaque élément est une carte : utile pour une liste de documents, de clients ou de produits." Style="{StaticResource Description}" />
-                            <custom:ListBoxCustom Width="320" Height="260" FontSize="14" Foreground="Black" SelectedIndex="0" SelectedItemBackground="#FF00D1FF" SelectedItemForeground="Black">
+                            <custom:ListBoxCustom Width="320" Height="260" FontSize="14" SelectedIndex="0" SelectedItemBackground="#FF00D1FF" SelectedItemForeground="Black">
                                 <ListBoxItem>
-                                    <custom:CardCustom Title="Rapport.docx" Background="#FF404040" TitleForeground="White" CornerRadius="8" Margin="2">
-                                        <TextBlock Text="12 pages — modifié hier" Foreground="#FFCCCCCC" />
+                                    <custom:CardCustom Title="Rapport.docx" CornerRadius="8" Margin="2">
+                                        <TextBlock Text="12 pages — modifié hier" />
                                     </custom:CardCustom>
                                 </ListBoxItem>
                                 <ListBoxItem>
-                                    <custom:CardCustom Title="Budget.xlsx" Background="#FF404040" TitleForeground="White" CornerRadius="8" Margin="2">
-                                        <TextBlock Text="3 onglets — modifié lundi" Foreground="#FFCCCCCC" />
+                                    <custom:CardCustom Title="Budget.xlsx" CornerRadius="8" Margin="2">
+                                        <TextBlock Text="3 onglets — modifié lundi" />
                                     </custom:CardCustom>
                                 </ListBoxItem>
                                 <ListBoxItem>
-                                    <custom:CardCustom Title="Photo.png" Background="#FF404040" TitleForeground="White" CornerRadius="8" Margin="2">
-                                        <TextBlock Text="1920 x 1080 — modifié dimanche" Foreground="#FFCCCCCC" />
+                                    <custom:CardCustom Title="Photo.png" CornerRadius="8" Margin="2">
+                                        <TextBlock Text="1920 x 1080 — modifié dimanche" />
                                     </custom:CardCustom>
                                 </ListBoxItem>
                             </custom:ListBoxCustom>
+                        </StackPanel>
+                    </Border>
+                    <Border Style="{StaticResource CarteExemple}">
+                        <StackPanel>
+                            <TextBlock Text="Code à copier-coller" Style="{StaticResource TitrePropriete}" />
+                            <TextBlock Text="Toutes les propriétés du contrôle, prêtes à copier-coller dans ton XAML." Style="{StaticResource Description}" />
+                            <TextBox x:Name="code_ListBoxCustom" IsReadOnly="True" FontFamily="Consolas" FontSize="12"
+                                     AcceptsReturn="True" TextWrapping="Wrap" Background="#FFF5F5F5" Foreground="Black"
+                                     BorderBrush="#FFCCCCCC" BorderThickness="1" Padding="10" />
                         </StackPanel>
                     </Border>
                 </StackPanel>
@@ -768,6 +822,15 @@
                             <custom:TextBoxCustom Watermark="10 lettres max" MaxLength="10" Width="320" Height="42" FontSize="16" />
                         </StackPanel>
                     </Border>
+                    <Border Style="{StaticResource CarteExemple}">
+                        <StackPanel>
+                            <TextBlock Text="Code à copier-coller" Style="{StaticResource TitrePropriete}" />
+                            <TextBlock Text="Toutes les propriétés du contrôle, prêtes à copier-coller dans ton XAML." Style="{StaticResource Description}" />
+                            <TextBox x:Name="code_TextBoxCustom" IsReadOnly="True" FontFamily="Consolas" FontSize="12"
+                                     AcceptsReturn="True" TextWrapping="Wrap" Background="#FFF5F5F5" Foreground="Black"
+                                     BorderBrush="#FFCCCCCC" BorderThickness="1" Padding="10" />
+                        </StackPanel>
+                    </Border>
                 </StackPanel>
 
                 <!-- ===== PasswordBoxCustom ===== -->
@@ -842,6 +905,15 @@
                             <TextBlock Text="NeonRadius" Style="{StaticResource TitrePropriete}" />
                             <TextBlock Text="Change la taille de la lueur. Ici, 30 : une grosse lueur. Défaut : 20." Style="{StaticResource Description}" />
                             <custom:PasswordBoxCustom Watermark="Grosse lueur" Neon="True" NeonRadius="30" Width="320" Height="42" FontSize="16" />
+                        </StackPanel>
+                    </Border>
+                    <Border Style="{StaticResource CarteExemple}">
+                        <StackPanel>
+                            <TextBlock Text="Code à copier-coller" Style="{StaticResource TitrePropriete}" />
+                            <TextBlock Text="Toutes les propriétés du contrôle, prêtes à copier-coller dans ton XAML." Style="{StaticResource Description}" />
+                            <TextBox x:Name="code_PasswordBoxCustom" IsReadOnly="True" FontFamily="Consolas" FontSize="12"
+                                     AcceptsReturn="True" TextWrapping="Wrap" Background="#FFF5F5F5" Foreground="Black"
+                                     BorderBrush="#FFCCCCCC" BorderThickness="1" Padding="10" />
                         </StackPanel>
                     </Border>
                 </StackPanel>
@@ -955,6 +1027,15 @@
                             <custom:PasswordRevealCustom Password="1234" MaxLength="4" Watermark="Code PIN" Width="320" Height="42" FontSize="16" />
                         </StackPanel>
                     </Border>
+                    <Border Style="{StaticResource CarteExemple}">
+                        <StackPanel>
+                            <TextBlock Text="Code à copier-coller" Style="{StaticResource TitrePropriete}" />
+                            <TextBlock Text="Toutes les propriétés du contrôle, prêtes à copier-coller dans ton XAML." Style="{StaticResource Description}" />
+                            <TextBox x:Name="code_PasswordRevealCustom" IsReadOnly="True" FontFamily="Consolas" FontSize="12"
+                                     AcceptsReturn="True" TextWrapping="Wrap" Background="#FFF5F5F5" Foreground="Black"
+                                     BorderBrush="#FFCCCCCC" BorderThickness="1" Padding="10" />
+                        </StackPanel>
+                    </Border>
                 </StackPanel>
 
                 <!-- ===== SearchBoxCustom ===== -->
@@ -1012,6 +1093,20 @@
                     </Border>
                     <Border Style="{StaticResource CarteExemple}">
                         <StackPanel>
+                            <TextBlock Text="SearchIconHoverBackground (nouveau v21)" Style="{StaticResource TitrePropriete}" />
+                            <TextBlock Text="Le fond du cercle derrière la loupe quand la souris est dessus. Ici, bleu clair. Par défaut, un voile gris. Mets Transparent pour l'enlever." Style="{StaticResource Description}" />
+                            <custom:SearchBoxCustom Width="320" Height="42" FontSize="16" SearchIconHoverBackground="LightBlue" />
+                        </StackPanel>
+                    </Border>
+                    <Border Style="{StaticResource CarteExemple}">
+                        <StackPanel>
+                            <TextBlock Text="ClearIconHoverBackground (nouveau v21)" Style="{StaticResource TitrePropriete}" />
+                            <TextBlock Text="Le fond du cercle derrière le X quand la souris est dessus. Ici, rouge clair. Par défaut, un voile gris." Style="{StaticResource Description}" />
+                            <custom:SearchBoxCustom Text="Tape pour voir le X" Width="320" Height="42" FontSize="16" ClearIconHoverBackground="LightCoral" />
+                        </StackPanel>
+                    </Border>
+                    <Border Style="{StaticResource CarteExemple}">
+                        <StackPanel>
                             <TextBlock Text="SearchIcon" Style="{StaticResource TitrePropriete}" />
                             <TextBlock Text="Remplace la loupe par ta propre image. Ici, une loupe cyan. En XAML, mets SearchIcon=&quot;Images/loupe.png&quot; (le PNG doit être en Build Action = Resource). Dans cette vitrine, l'image est intégrée au code pour que le fichier tourne seul." Style="{StaticResource Description}" />
                             <custom:SearchBoxCustom x:Name="searchIconDemo" Watermark="Rechercher..." Width="320" Height="42" FontSize="16" />
@@ -1065,7 +1160,7 @@
                             <TextBlock Text="Cas d'utilisation : la barre filtre une liste en direct. Tape quelques lettres (ex. : « rap ») et la liste se réduit. Appuie sur Entrée pour lancer la recherche." Style="{StaticResource Description}" />
                             <custom:SearchBoxCustom x:Name="searchDemo" Watermark="Rechercher un document..." CornerRadius="10" Height="42" FontSize="16" />
                             <ListBox x:Name="lstResultats" Height="180" Margin="0,10,0,0" Background="#FF232323" Foreground="White" FontSize="14" />
-                            <TextBlock x:Name="txtStatut" Text="12 document(s)" FontSize="12" Foreground="#FFAAAAAA" Margin="0,8,0,0" />
+                            <TextBlock x:Name="txtStatut" Text="12 document(s)" FontSize="12" Margin="0,8,0,0" />
                         </StackPanel>
                     </Border>
                     <Border Style="{StaticResource CarteExemple}">
@@ -1073,7 +1168,16 @@
                             <TextBlock Text="SearchIconClicked (nouveau v15)" Style="{StaticResource TitrePropriete}" />
                             <TextBlock Text="Cliquer sur la loupe déclenche ta propre action : c'est un événement à part, séparé de Search (Entrée). Ici, la loupe lance la même recherche que Entrée (elle filtre la liste ci-dessus). Essaie : tape un mot, puis clique la loupe." Style="{StaticResource Description}" />
                             <custom:SearchBoxCustom x:Name="searchLoupeDemo" Watermark="Tape un mot puis clique la loupe..." CornerRadius="10" Height="42" FontSize="16" SearchIconClicked="SearchLoupeDemo_SearchIconClicked" />
-                            <TextBlock x:Name="txtLoupeStatut" Text="Clique sur la loupe pour lancer la recherche." FontSize="13" Foreground="#FFCCCCCC" Margin="0,8,0,0" TextWrapping="Wrap" />
+                            <TextBlock x:Name="txtLoupeStatut" Text="Clique sur la loupe pour lancer la recherche." FontSize="13" Margin="0,8,0,0" TextWrapping="Wrap" />
+                        </StackPanel>
+                    </Border>
+                    <Border Style="{StaticResource CarteExemple}">
+                        <StackPanel>
+                            <TextBlock Text="Code à copier-coller" Style="{StaticResource TitrePropriete}" />
+                            <TextBlock Text="Toutes les propriétés du contrôle, prêtes à copier-coller dans ton XAML." Style="{StaticResource Description}" />
+                            <TextBox x:Name="code_SearchBoxCustom" IsReadOnly="True" FontFamily="Consolas" FontSize="12"
+                                     AcceptsReturn="True" TextWrapping="Wrap" Background="#FFF5F5F5" Foreground="Black"
+                                     BorderBrush="#FFCCCCCC" BorderThickness="1" Padding="10" />
                         </StackPanel>
                     </Border>
                 </StackPanel>
@@ -1187,6 +1291,36 @@
                             <custom:NumericUpDownCustom Value="2.5" Minimum="0" Maximum="10" Increment="0.1" Format="0.00" Width="320" Height="42" FontSize="16" />
                         </StackPanel>
                     </Border>
+                    <Border Style="{StaticResource CarteExemple}">
+                        <StackPanel>
+                            <TextBlock Text="Symbols = PlusMinus (nouveau v20)" Style="{StaticResource TitrePropriete}" />
+                            <TextBlock Text="Les symboles des boutons : un plus et un moins à la place des triangles. Des options prédéfinies (comme Visibility), pas du texte libre." Style="{StaticResource Description}" />
+                            <custom:NumericUpDownCustom Value="5" Width="200" Height="42" FontSize="16" Symbols="PlusMinus" />
+                        </StackPanel>
+                    </Border>
+                    <Border Style="{StaticResource CarteExemple}">
+                        <StackPanel>
+                            <TextBlock Text="Symbols = Chevrons" Style="{StaticResource TitrePropriete}" />
+                            <TextBlock Text="Une autre possibilité : des chevrons, plus fins et plus modernes que les triangles." Style="{StaticResource Description}" />
+                            <custom:NumericUpDownCustom Value="5" Width="200" Height="42" FontSize="16" Symbols="Chevrons" />
+                        </StackPanel>
+                    </Border>
+                    <Border Style="{StaticResource CarteExemple}">
+                        <StackPanel>
+                            <TextBlock Text="Symbols = Arrows" Style="{StaticResource TitrePropriete}" />
+                            <TextBlock Text="Ou des flèches : la direction est encore plus claire que les triangles." Style="{StaticResource Description}" />
+                            <custom:NumericUpDownCustom Value="5" Width="200" Height="42" FontSize="16" Symbols="Arrows" />
+                        </StackPanel>
+                    </Border>
+                    <Border Style="{StaticResource CarteExemple}">
+                        <StackPanel>
+                            <TextBlock Text="Code à copier-coller" Style="{StaticResource TitrePropriete}" />
+                            <TextBlock Text="Toutes les propriétés du contrôle, prêtes à copier-coller dans ton XAML." Style="{StaticResource Description}" />
+                            <TextBox x:Name="code_NumericUpDownCustom" IsReadOnly="True" FontFamily="Consolas" FontSize="12"
+                                     AcceptsReturn="True" TextWrapping="Wrap" Background="#FFF5F5F5" Foreground="Black"
+                                     BorderBrush="#FFCCCCCC" BorderThickness="1" Padding="10" />
+                        </StackPanel>
+                    </Border>
                 </StackPanel>
 
                 <!-- ===== ComboBoxCustom ===== -->
@@ -1198,6 +1332,13 @@
                             <TextBlock Text="ItemsSource" Style="{StaticResource TitrePropriete}" />
                             <TextBlock Text="La liste des choix. Ici, 4 choix, et « Code » est déjà choisi. La liste vient du code (voir MainWindow.xaml.cs)." Style="{StaticResource Description}" />
                             <custom:ComboBoxCustom x:Name="comboDemo1" SelectedItem="Code" Width="320" Height="42" FontSize="16" />
+                        </StackPanel>
+                    </Border>
+                    <Border Style="{StaticResource CarteExemple}">
+                        <StackPanel>
+                            <TextBlock Text="IsDropDownOpen" Style="{StaticResource TitrePropriete}" />
+                            <TextBlock Text="Ouvre la liste dès le départ (vrai) ou la ferme (faux, défaut). Ici, vrai : la liste est déjà ouverte quand la page s'affiche." Style="{StaticResource Description}" />
+                            <custom:ComboBoxCustom x:Name="comboDemo7" IsDropDownOpen="True" Width="320" Height="42" FontSize="16" />
                         </StackPanel>
                     </Border>
                     <Border Style="{StaticResource CarteExemple}">
@@ -1228,13 +1369,7 @@
                             <custom:ComboBoxCustom x:Name="comboDemo6" MaxDropDownHeight="100" Placeholder="Choisir un document..." Width="320" Height="42" FontSize="16" />
                         </StackPanel>
                     </Border>
-                    <Border Style="{StaticResource CarteExemple}">
-                        <StackPanel>
-                            <TextBlock Text="IsDropDownOpen" Style="{StaticResource TitrePropriete}" />
-                            <TextBlock Text="Ouvre la liste dès le départ (vrai) ou la ferme (faux, défaut). Ici, vrai : la liste est déjà ouverte quand la page s'affiche." Style="{StaticResource Description}" />
-                            <custom:ComboBoxCustom x:Name="comboDemo7" IsDropDownOpen="True" Width="320" Height="42" FontSize="16" />
-                        </StackPanel>
-                    </Border>
+
                     <Border Style="{StaticResource CarteExemple}">
                         <StackPanel>
                             <TextBlock Text="CornerRadius" Style="{StaticResource TitrePropriete}" />
@@ -1268,6 +1403,15 @@
                             <TextBlock Text="NeonRadius" Style="{StaticResource TitrePropriete}" />
                             <TextBlock Text="Change la taille de la lueur. Ici, 30 : une grosse lueur. Défaut : 20." Style="{StaticResource Description}" />
                             <custom:ComboBoxCustom x:Name="comboDemo11" Neon="True" NeonRadius="30" Placeholder="Choisir..." Width="320" Height="42" FontSize="16" />
+                        </StackPanel>
+                    </Border>
+                    <Border Style="{StaticResource CarteExemple}">
+                        <StackPanel>
+                            <TextBlock Text="Code à copier-coller" Style="{StaticResource TitrePropriete}" />
+                            <TextBlock Text="Toutes les propriétés du contrôle, prêtes à copier-coller dans ton XAML." Style="{StaticResource Description}" />
+                            <TextBox x:Name="code_ComboBoxCustom" IsReadOnly="True" FontFamily="Consolas" FontSize="12"
+                                     AcceptsReturn="True" TextWrapping="Wrap" Background="#FFF5F5F5" Foreground="Black"
+                                     BorderBrush="#FFCCCCCC" BorderThickness="1" Padding="10" />
                         </StackPanel>
                     </Border>
                 </StackPanel>

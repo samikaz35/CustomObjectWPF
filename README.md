@@ -4,7 +4,7 @@ Mon premier projet en **VibeCoding**.
 
 L'idée, c'est d'expérimenter le vibe coding — coder en décrivant ce que je veux à une IA, puis itérer — en créant des **assets pour mes futurs projets WPF** : une librairie de contrôles custom, prêts à copier-coller.
 
-> **Version actuelle : v20** — 12 contrôles, 141 exemples + 12 blocs de code dans la vitrine.
+> **Version actuelle : v21** — 12 contrôles, 143 exemples + 12 blocs de code dans la vitrine.
 
 ---
 
@@ -401,6 +401,8 @@ Une barre de recherche : une loupe à gauche, un X pour effacer (il n'apparaît 
 | `IconHoverColor` | `Brush` | `null` | La couleur de la loupe au survol. |
 | `ClearIconColor` | `Brush` | `null` (= `IconColor`, sinon `Foreground`) | La couleur du X. |
 | `ClearIconHoverColor` | `Brush` | `null` | La couleur du X au survol. |
+| `SearchIconHoverBackground` | `Brush` | `null` (= voile gris) | Le fond du cercle derrière la loupe au survol. `Transparent` = pas de survol. |
+| `ClearIconHoverBackground` | `Brush` | `null` (= voile gris) | Le fond du cercle derrière le X au survol. |
 | `SearchIcon` | `ImageSource` | Loupe (intégrée) | Ta propre image à la place de la loupe (null = pas d'icône). |
 | `ClearIcon` | `ImageSource` | X (intégré) | Ta propre image à la place du X (null = pas d'icône). |
 | `CornerRadius` | `CornerRadius` | `10` | Les coins arrondis de la barre. |
@@ -413,6 +415,7 @@ Les icônes par défaut sont **noires** (comme les yeux) : `IconColor` / `ClearI
 <custom:SearchBoxCustom Watermark="Rechercher un document..." />
 <custom:SearchBoxCustom Text="test" IconColor="DarkBlue" ClearIconColor="Red" />
 <custom:SearchBoxCustom SearchIcon="Images/loupe.png" ClearIcon="Images/x.png" />
+<custom:SearchBoxCustom SearchIconHoverBackground="LightBlue" ClearIconHoverBackground="LightCoral" />
 ```
 
 **Recherche fonctionnelle** (filtrer une liste en direct) :
@@ -570,6 +573,7 @@ La loupe montre un curseur « main » quand la souris passe dessus : on voit qu'
 - **v18** — Le survol met le texte en noir (ListBox + liste du ComboBox) : un texte blanc ne reste plus blanc sur le fond clair du survol.
 - **v19** — `NumericUpDownCustom` : `UpText` / `DownText` — les symboles des boutons +/− sont modifiables (`"+"` / `"-"`, `"˄"` / `"˅"`, `"↑"` / `"↓"`... ; défaut `"▲"` / `"▼"`).
 - **v20** — `UpText` / `DownText` **retirés**, remplacés par `Symbols` (enum `StepSymbols`, comme `Visibility` en WPF : des options prédéfinies, pas du texte libre) : `Triangles` (défaut), `PlusMinus`, `Chevrons`, `Arrows`.
+- **v21** — `Foreground` noir par défaut **posé à la création** (`SetValue`, pas `SetCurrentValue` : l'héritage du `Foreground` clair de la fenêtre l'écrasait, il fallait écrire `Foreground="Black"` en XAML) ; cartes d'exemple de la vitrine redevenues sombres ; watermark du `PasswordBox` / `PasswordReveal` recalé (le `Padding` v16 le poussait trop à droite) ; `SearchBox` : survol rond pour la loupe + `SearchIconHoverBackground` / `ClearIconHoverBackground` ; la molette défile la page même sur un champ de texte ; exemple `IsDropDownOpen` du `ComboBox` en 2e position.
 
 Le compteur `VERSION` est en tête de `CustomObjectWPF.cs`, avec l'historique : **+1 à chaque modification**.
 
