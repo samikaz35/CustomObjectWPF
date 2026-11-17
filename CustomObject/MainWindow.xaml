@@ -1,0 +1,346 @@
+﻿<Window x:Class="CustomObject.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:CustomObject"
+        mc:Ignorable="d"
+          xmlns:custom="clr-namespace:InfiniteMouse.Model"
+        Title="Vitrine — Contrôles customs" Height="1000" Width="740"
+        Background="#FF2D2D2D">
+    <!--
+        FENÊTRE DE DÉMO : une section par contrôle, UN exemple isolé par NOUVELLE
+        propriété (pour voir ce qu'elle fait seule), puis des combinaisons,
+        puis une section "Récupérer les valeurs" avec le code-behind (Vitrine.xaml.cs).
+
+        Pour la tester : ajoute Vitrine.xaml (+ Vitrine.xaml.cs) au projet, puis mets
+        temporairement StartupUri="Vitrine.xaml" dans App.xaml le temps de regarder.
+    -->
+    <Window.Resources>
+        <Style x:Key="NomPropriete" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="#FF7DDFFF"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Margin" Value="0,16,0,2"/>
+        </Style>
+        <Style x:Key="Explication" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="#FFAAAAAA"/>
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="TextWrapping" Value="Wrap"/>
+            <Setter Property="Margin" Value="0,0,0,6"/>
+        </Style>
+    </Window.Resources>
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="20">
+        <StackPanel>
+            <TextBlock Text="Vitrine des contrôles customs" Foreground="White"
+                       FontSize="24" FontWeight="Bold" Margin="0,0,0,4"/>
+            <TextBlock Text="Chaque NOUVELLE propriété a son exemple isolé, avec une explication. À la fin : comment récupérer les valeurs dans le code."
+                       Foreground="#FFAAAAAA" FontSize="12" TextWrapping="Wrap" Margin="0,0,0,10"/>
+
+            <!-- ==================== BUTTONCUSTOM ==================== -->
+            <custom:CardCustom Title="ButtonCustom" Margin="0,0,0,16"
+                               Background="#FF3A3A3A" BorderBrush="#FF555555" BorderThickness="1">
+                <StackPanel>
+                    <TextBlock Style="{StaticResource Explication}"
+                               Text="D'abord tes propriétés d'origine, puis les nouvelles (HoverBackground, PressedBackground)."/>
+
+                    <TextBlock Style="{StaticResource NomPropriete}" Text="Neon"/>
+                    <TextBlock Style="{StaticResource Explication}"
+                               Text="Active l'effet de lueur autour du bouton. Par défaut désactivé (False). La lueur est rendue sur une couche derrière le texte pour qu'il reste net et lisible."/>
+                    <custom:ButtonCustom Content="Neon=True (seul)" Width="220" Height="36" Neon="True"/>
+
+                    <TextBlock Style="{StaticResource NomPropriete}" Text="NeonColor"/>
+                    <TextBlock Style="{StaticResource Explication}"
+                               Text="Couleur de la lueur. Par défaut cyan. Ne se voit que si Neon=True."/>
+                    <custom:ButtonCustom Content="NeonColor=Rouge (seul)" Width="250" Height="36"
+                                         Neon="True" NeonColor="Red"/>
+
+                    <TextBlock Style="{StaticResource NomPropriete}" Text="NeonRadius"/>
+                    <TextBlock Style="{StaticResource Explication}"
+                               Text="Largeur du flou de la lueur en pixels. Plus c'est grand, plus la lueur s'étend loin. Par défaut 20."/>
+                    <custom:ButtonCustom Content="NeonRadius=40 (seul)" Width="250" Height="36"
+                                         Neon="True" NeonRadius="40"/>
+
+                    <TextBlock Style="{StaticResource NomPropriete}" Text="CornerRadius"/>
+                    <TextBlock Style="{StaticResource Explication}"
+                               Text="Arrondi des coins du bouton. 0 = carré, 25 = pilule. Par défaut 15."/>
+                    <StackPanel Orientation="Horizontal">
+                        <custom:ButtonCustom Content="Carré (0)" Width="140" Height="36"
+                                             CornerRadius="0" Margin="0,0,8,0"/>
+                        <custom:ButtonCustom Content="Pilule (25)" Width="140" Height="36"
+                                             CornerRadius="25"/>
+                    </StackPanel>
+
+                    <TextBlock Style="{StaticResource NomPropriete}" Text="HoverBackground (nouveau)"/>
+                    <TextBlock Style="{StaticResource Explication}"
+                               Text="Fond affiché quand la souris survole le bouton. Accepte n'importe quel Brush (couleur unie, dégradé...). Si tu ne le mets pas, le bouton garde son Background au survol."/>
+                    <custom:ButtonCustom Content="Survole-moi (HoverBackground seul)" Width="260" Height="36"
+                                         HoverBackground="LightSkyBlue"/>
+
+                    <TextBlock Style="{StaticResource NomPropriete}" Text="PressedBackground (nouveau)"/>
+                    <TextBlock Style="{StaticResource Explication}"
+                               Text="Fond affiché pendant que le bouton est enfoncé (clic maintenu). Prioritaire sur HoverBackground : si les deux sont vrais en même temps, c'est celui-ci qui gagne."/>
+                    <custom:ButtonCustom Content="Clique et maintiens (PressedBackground seul)" Width="300" Height="36"
+                                         PressedBackground="SteelBlue"/>
+
+                    <TextBlock Style="{StaticResource NomPropriete}" Text="Combinaison : les deux"/>
+                    <TextBlock Style="{StaticResource Explication}"
+                               Text="Les deux ensemble : survol = bleu pâle, clic = bleu foncé. C'est la combinaison typique."/>
+                    <custom:ButtonCustom Content="Les deux propriétés" Width="220" Height="36"
+                                         HoverBackground="LightSkyBlue" PressedBackground="SteelBlue"/>
+                </StackPanel>
+            </custom:CardCustom>
+
+            <!-- ==================== CHECKBOXCUSTOM ==================== -->
+            <custom:CardCustom Title="CheckBoxCustom" Margin="0,0,0,16"
+                               Background="#FF3A3A3A" BorderBrush="#FF555555" BorderThickness="1">
+                <StackPanel>
+                    <TextBlock Style="{StaticResource Explication}"
+                               Text="D'abord tes propriétés d'origine, puis les nouvelles (BoxSize, BoxSpacing)."/>
+
+                    <TextBlock Style="{StaticResource NomPropriete}" Text="CheckColor"/>
+                    <TextBlock Style="{StaticResource Explication}"
+                               Text="Couleur du crochet. Par défaut noir."/>
+                    <custom:CheckBoxCustom Content="CheckColor=Rouge (seul)" Foreground="White"
+                                           CheckColor="Red" Margin="0,4"/>
+
+                    <TextBlock Style="{StaticResource NomPropriete}" Text="BorderHover"/>
+                    <TextBlock Style="{StaticResource Explication}"
+                               Text="Couleur de la bordure quand la souris survole la case. Par défaut bleu."/>
+                    <custom:CheckBoxCustom Content="BorderHover=Orange (seul) — survole-moi" Foreground="White"
+                                           BorderHover="Orange" Margin="0,4"/>
+
+                    <TextBlock Style="{StaticResource NomPropriete}" Text="CornerRadius"/>
+                    <TextBlock Style="{StaticResource Explication}"
+                               Text="Arrondi des coins de la case. Par défaut 0 (carré)."/>
+                    <custom:CheckBoxCustom Content="CornerRadius=7 (seul)" Foreground="White"
+                                           CornerRadius="7" Margin="0,4"/>
+                    <custom:CheckBoxCustom Content="CornerRadius=3 (seul)" Foreground="White"
+                       CornerRadius="3" Margin="0,4"/>
+
+                    <TextBlock Style="{StaticResource NomPropriete}" Text="Neon"/>
+                    <TextBlock Style="{StaticResource Explication}"
+                               Text="Même effet de lueur que le bouton (NeonColor et NeonRadius marchent pareil)."/>
+                    <custom:CheckBoxCustom Content="Neon=True (seul)" Foreground="White"
+                                           Neon="True" NeonColor="Lime" Margin="0,4"/>
+
+                    <TextBlock Style="{StaticResource NomPropriete}" Text="BoxSize (nouveau)"/>
+                    <TextBlock Style="{StaticResource Explication}"
+                               Text="Taille de la case en pixels (carré). Le crochet s'agrandit tout seul avec — pas besoin de toucher à autre chose. Par défaut 14."/>
+                    <custom:CheckBoxCustom Content="BoxSize=28 (seul)" Foreground="White"
+                                           BoxSize="28" Margin="0,4"/>
+
+                    <TextBlock Style="{StaticResource NomPropriete}" Text="BoxSpacing (nouveau)"/>
+                    <TextBlock Style="{StaticResource Explication}"
+                               Text="Distance en pixels entre la case et le texte du libellé. Par défaut 5. Pratique quand la case est grosse ou le texte collé."/>
+                    <custom:CheckBoxCustom Content="BoxSpacing=20 (seul)" Foreground="White"
+                                           BoxSpacing="20" Margin="0,4"/>
+
+                    <TextBlock Style="{StaticResource NomPropriete}" Text="Combinaison"/>
+                    <TextBlock Style="{StaticResource Explication}"
+                               Text="BoxSize + BoxSpacing + CheckColor (propriété existante) : une grosse case bien espacée avec un crochet coloré."/>
+                    <custom:CheckBoxCustom Content="Grosse case espacée" Foreground="White"
+                                           BoxSize="24" BoxSpacing="12" CheckColor="Lime" Margin="0,4"/>
+                </StackPanel>
+            </custom:CardCustom>
+
+            <!-- ==================== TOGGLESWITCHCUSTOM ==================== -->
+            <custom:CardCustom Title="ToggleSwitchCustom — nouveau contrôle" Margin="0,0,0,16"
+                               Background="#FF3A3A3A" BorderBrush="#FF555555" BorderThickness="1">
+                <StackPanel>
+                    <TextBlock Style="{StaticResource Explication}"
+                               Text="Interrupteur on/off. C'est un CheckBox déguisé : IsChecked, Checked/Unchecked, bindings et la touche Espace marchent sans rien coder. NOUVEAU : la pastille glisse avec une mini animation de 150 ms au lieu de se téléporter — clique pour voir."/>
+                    <custom:ToggleSwitchCustom Content="Interrupteur défaut (IsChecked=True)" Foreground="White"
+                                               IsChecked="True" Margin="0,4"/>
+
+                    <TextBlock Style="{StaticResource NomPropriete}" Text="OnBrush"/>
+                    <TextBlock Style="{StaticResource Explication}"
+                               Text="Couleur de la piste quand l'interrupteur est ON (coché). Par défaut un cyan."/>
+                    <custom:ToggleSwitchCustom Content="OnBrush=Lime (seul)" Foreground="White"
+                                               OnBrush="Lime" IsChecked="True" Margin="0,4"/>
+
+                    <TextBlock Style="{StaticResource NomPropriete}" Text="OffBrush"/>
+                    <TextBlock Style="{StaticResource Explication}"
+                               Text="Couleur de la piste quand l'interrupteur est OFF (décoché). Par défaut un gris foncé."/>
+                    <custom:ToggleSwitchCustom Content="OffBrush=#FF333333 (seul)" Foreground="White"
+                                               OffBrush="#FF333333" Margin="0,4"/>
+
+                    <TextBlock Style="{StaticResource NomPropriete}" Text="ThumbBrush"/>
+                    <TextBlock Style="{StaticResource Explication}"
+                               Text="Couleur de la pastille mobile (le rond qui glisse). Par défaut blanc."/>
+                    <custom:ToggleSwitchCustom Content="ThumbBrush=Orange (seul)" Foreground="White"
+                                               ThumbBrush="Orange" IsChecked="True" Margin="0,4"/>
+
+                    <TextBlock Style="{StaticResource NomPropriete}" Text="Combinaison"/>
+                    <custom:ToggleSwitchCustom Content="Tout custom" Foreground="White"
+                                               OnBrush="Lime" OffBrush="#FF333333" ThumbBrush="White"
+                                               Neon="True" NeonColor="Lime" Margin="0,4"/>
+                </StackPanel>
+            </custom:CardCustom>
+
+            <!-- ==================== SLIDERCUSTOM ==================== -->
+            <custom:CardCustom Title="SliderCustom — nouveau contrôle" Margin="0,0,0,16"
+                               Background="#FF3A3A3A" BorderBrush="#FF555555" BorderThickness="1">
+                <StackPanel>
+                    <TextBlock Style="{StaticResource Explication}"
+                               Text="Glisse la pastille, clique sur la piste pour sauter, ou utilise ← → (le slider doit avoir le focus)."/>
+
+                    <TextBlock Style="{StaticResource NomPropriete}" Text="Minimum / Maximum / Value (hérités de Slider)"/>
+                    <TextBlock Style="{StaticResource Explication}"
+                               Text="Pas besoin de les recréer : elles viennent déjà de Slider. Minimum et Maximum définissent les bornes (défaut 0 et 100), Value la position de départ (défaut 0). Le drag, le clic sur la piste et le clavier les respectent."/>
+                    <custom:SliderCustom Minimum="-50" Maximum="50" Value="10" Width="320" Margin="0,8"/>
+                    <TextBlock Text="Ici : Minimum=-50, Maximum=50, Value=10" Foreground="#FF7DDFFF" Margin="0,0,0,4"/>
+
+                    <TextBlock Style="{StaticResource NomPropriete}" Text="TrackBrush"/>
+                    <TextBlock Style="{StaticResource Explication}"
+                               Text="Couleur de la piste (la barre). Par défaut un gris foncé."/>
+                    <custom:SliderCustom Minimum="0" Maximum="100" Value="40" Width="320"
+                                         TrackBrush="#FF777777" Margin="0,8"/>
+
+                    <TextBlock Style="{StaticResource NomPropriete}" Text="ThumbBrush"/>
+                    <TextBlock Style="{StaticResource Explication}"
+                               Text="Couleur de la pastille. Par défaut cyan."/>
+                    <custom:SliderCustom Minimum="0" Maximum="100" Value="40" Width="320"
+                                         ThumbBrush="Orange" Margin="0,8"/>
+
+                    <TextBlock Style="{StaticResource NomPropriete}" Text="ThumbSize"/>
+                    <TextBlock Style="{StaticResource Explication}"
+                               Text="Diamètre de la pastille en pixels. La zone de déplacement suit toute seule. Par défaut 18."/>
+                    <custom:SliderCustom Minimum="0" Maximum="100" Value="40" Width="320"
+                                         ThumbSize="28" Margin="0,8"/>
+
+                    <TextBlock Style="{StaticResource NomPropriete}" Text="TrackHeight"/>
+                    <TextBlock Style="{StaticResource Explication}"
+                               Text="Épaisseur de la piste en pixels. Par défaut 6."/>
+                    <custom:SliderCustom Minimum="0" Maximum="100" Value="40" Width="320"
+                                         TrackHeight="12" Margin="0,8"/>
+
+                    <TextBlock Style="{StaticResource NomPropriete}" Text="TrackCornerRadius"/>
+                    <TextBlock Style="{StaticResource Explication}"
+                               Text="Forme de la piste : 0 = rectangle aux coins vifs, petite valeur = coins légèrement arrondis, grande valeur = pilule (défaut)."/>
+                    <StackPanel Orientation="Horizontal" Margin="0,8">
+                        <StackPanel Margin="0,0,24,0">
+                            <TextBlock Style="{StaticResource Explication}" Text="Rectangle (0) :"/>
+                            <custom:SliderCustom Minimum="0" Maximum="100" Value="40" Width="200"
+                                                 TrackCornerRadius="0" TrackHeight="10"/>
+                        </StackPanel>
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource Explication}" Text="Coins arrondis (4) :"/>
+                            <custom:SliderCustom Minimum="0" Maximum="100" Value="40" Width="200"
+                                                 TrackCornerRadius="4" TrackHeight="10"/>
+                        </StackPanel>
+                    </StackPanel>
+
+                    <TextBlock Style="{StaticResource NomPropriete}" Text="ThumbCornerRadius"/>
+                    <TextBlock Style="{StaticResource Explication}"
+                               Text="Forme de la pastille : 0 = carré, grande valeur = rond (défaut)."/>
+                    <custom:SliderCustom Minimum="0" Maximum="100" Value="40" Width="320"
+                                         ThumbCornerRadius="0" ThumbSize="24" Margin="0,8"/>
+
+                    <TextBlock Style="{StaticResource NomPropriete}" Text="Combinaisons : tout custom + vertical + ticks"/>
+                    <custom:SliderCustom Minimum="0" Maximum="100" Value="65" Width="320" Margin="0,8"
+                                         TrackBrush="#FF444444" ThumbBrush="Orange"
+                                         ThumbSize="24" TrackHeight="10" Neon="True" NeonColor="Orange"/>
+                    <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                        <StackPanel Margin="0,0,32,0">
+                            <TextBlock Style="{StaticResource Explication}" Text="Vertical :"/>
+                            <custom:SliderCustom Orientation="Vertical" Minimum="0" Maximum="100" Value="70"
+                                                 Height="150"/>
+                        </StackPanel>
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource Explication}" Text="Avec snap sur les ticks :"/>
+                            <custom:SliderCustom x:Name="sliderTicks" Minimum="0" Maximum="10" Value="4" Width="220"
+                                                 TickFrequency="1" IsSnapToTickEnabled="True" ThumbBrush="Lime" Margin="0,8"/>
+                            <TextBlock Text="{Binding Value, ElementName=sliderTicks, StringFormat=Valeur : {0:F0}}"
+                                       Foreground="White"/>
+                        </StackPanel>
+                    </StackPanel>
+                </StackPanel>
+            </custom:CardCustom>
+
+            <!-- ==================== CARDCUSTOM ==================== -->
+            <custom:CardCustom Title="CardCustom — nouveau contrôle" Margin="0,0,0,16"
+                               Background="#FF3A3A3A" BorderBrush="#FF555555" BorderThickness="1">
+                <StackPanel>
+                    <TextBlock Style="{StaticResource NomPropriete}" Text="Title"/>
+                    <TextBlock Style="{StaticResource Explication}"
+                               Text="Titre affiché en haut de la carte. Si tu le laisses vide, il n'y a pas d'en-tête du tout."/>
+                    <custom:CardCustom Title="Titre seul" Background="#FF454545" BorderBrush="#FF666666" BorderThickness="1" Margin="0,0,0,4">
+                        <TextBlock Text="Contenu de la carte." Foreground="White"/>
+                    </custom:CardCustom>
+
+                    <TextBlock Style="{StaticResource NomPropriete}" Text="TitleForeground"/>
+                    <TextBlock Style="{StaticResource Explication}"
+                               Text="Couleur du titre. Par défaut blanc."/>
+                    <custom:CardCustom Title="Titre cyan (TitleForeground seul)" TitleForeground="#FF00D1FF"
+                                       Background="#FF454545" BorderBrush="#FF666666" BorderThickness="1" Margin="0,0,0,4">
+                        <TextBlock Text="Contenu de la carte." Foreground="White"/>
+                    </custom:CardCustom>
+
+                    <TextBlock Style="{StaticResource NomPropriete}" Text="TitleFontSize"/>
+                    <TextBlock Style="{StaticResource Explication}"
+                               Text="Taille du titre en pixels. Par défaut 14."/>
+                    <custom:CardCustom Title="Gros titre (TitleFontSize seul)" TitleFontSize="20"
+                                       Background="#FF454545" BorderBrush="#FF666666" BorderThickness="1" Margin="0,0,0,4">
+                        <TextBlock Text="Contenu de la carte." Foreground="White"/>
+                    </custom:CardCustom>
+
+                    <TextBlock Style="{StaticResource NomPropriete}" Text="CornerRadius"/>
+                    <TextBlock Style="{StaticResource Explication}"
+                               Text="Arrondi des coins de la carte. Par défaut 10."/>
+                    <custom:CardCustom Title="Coins très arrondis (CornerRadius seul)" CornerRadius="24"
+                                       Background="#FF454545" BorderBrush="#FF666666" BorderThickness="1">
+                        <TextBlock Text="Contenu de la carte." Foreground="White"/>
+                    </custom:CardCustom>
+                </StackPanel>
+            </custom:CardCustom>
+
+            <!-- ==================== RÉCUPÉRER LES VALEURS ==================== -->
+            <custom:CardCustom Title="Récupérer les valeurs dans le code" Margin="0,0,0,16"
+                               Background="#FF3A3A3A" BorderBrush="#FF00D1FF" BorderThickness="1">
+                <StackPanel>
+                    <TextBlock Style="{StaticResource Explication}"
+                               Text="Le XAML affiche, mais c'est le code-behind (Vitrine.xaml.cs) qui lit et réagit. Voici les 3 patterns :"/>
+
+                    <TextBlock Style="{StaticResource NomPropriete}" Text="Slider : Value + événement ValueChanged"/>
+                    <TextBlock Style="{StaticResource Explication}"
+                               Text="ValueChanged se déclenche à chaque mouvement (pratique pour une prévisualisation en direct). Pour lire la valeur à un moment précis (ex: clic sur un bouton), tu lis simplement sliderDemo.Value dans le code."/>
+                    <custom:SliderCustom x:Name="sliderDemo" Minimum="0" Maximum="100" Value="30" Width="320"
+                                         ValueChanged="SliderDemo_ValueChanged" Margin="0,8"/>
+                    <TextBlock x:Name="lblSliderLive" Text="Bougez le slider..." Foreground="#FF7DDFFF" Margin="0,0,0,4"/>
+                    <StackPanel Orientation="Horizontal">
+                        <custom:ButtonCustom Content="Lire sliderDemo.Value" Width="200" Height="32"
+                                             Click="BtnLireSlider_Click"/>
+                        <TextBlock x:Name="lblSliderLu" Text="" Foreground="White" VerticalAlignment="Center" Margin="12,0,0,0"/>
+                    </StackPanel>
+
+                    <TextBlock Style="{StaticResource NomPropriete}" Text="CheckBoxCustom : IsChecked + Checked/Unchecked"/>
+                    <TextBlock Style="{StaticResource Explication}"
+                               Text="Checked/Unchecked réagissent au changement. Attention : IsChecked est un bool? (peut être null) — dans le code on teste avec '== true' au lieu de '.Value'."/>
+                    <custom:CheckBoxCustom x:Name="caseDemo" Content="Cochez-moi" Foreground="White"
+                                           Checked="CaseDemo_Checked" Unchecked="CaseDemo_Unchecked" Margin="0,4"/>
+                    <TextBlock x:Name="lblCaseEtat" Text="État : —" Foreground="#FF7DDFFF" Margin="0,0,0,4"/>
+                    <StackPanel Orientation="Horizontal">
+                        <custom:ButtonCustom Content="Lire caseDemo.IsChecked" Width="200" Height="32"
+                                             Click="BtnLireCase_Click"/>
+                        <TextBlock x:Name="lblCaseLue" Text="" Foreground="White" VerticalAlignment="Center" Margin="12,0,0,0"/>
+                    </StackPanel>
+
+                    <TextBlock Style="{StaticResource NomPropriete}" Text="ToggleSwitchCustom : pareil, c'est un CheckBox"/>
+                    <TextBlock Style="{StaticResource Explication}"
+                               Text="Le ToggleSwitch hérite de CheckBox : exactement le même pattern. IsChecked == true veut dire ON."/>
+                    <custom:ToggleSwitchCustom x:Name="toggleDemo" Content="Basculez-moi" Foreground="White"
+                                               Checked="ToggleDemo_Checked" Unchecked="ToggleDemo_Unchecked" Margin="0,4"/>
+                    <TextBlock x:Name="lblToggleEtat" Text="État : —" Foreground="#FF7DDFFF" Margin="0,0,0,4"/>
+                    <StackPanel Orientation="Horizontal">
+                        <custom:ButtonCustom Content="Lire toggleDemo.IsChecked" Width="210" Height="32"
+                                             Click="BtnLireToggle_Click"/>
+                        <TextBlock x:Name="lblToggleLue" Text="" Foreground="White" VerticalAlignment="Center" Margin="12,0,0,0"/>
+                    </StackPanel>
+                </StackPanel>
+            </custom:CardCustom>
+
+        </StackPanel>
+    </ScrollViewer>
+</Window>
