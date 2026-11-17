@@ -4,7 +4,7 @@ Mon premier projet en **VibeCoding**.
 
 L'idée, c'est d'expérimenter le vibe coding — coder en décrivant ce que je veux à une IA, puis itérer — en créant des **assets pour mes futurs projets WPF** : une librairie de contrôles custom, prêts à copier-coller.
 
-> **Version actuelle : v16** — 12 contrôles, 138 exemples dans la vitrine.
+> **Version actuelle : v20** — 12 contrôles, 141 exemples + 12 blocs de code dans la vitrine.
 
 ---
 
@@ -110,6 +110,8 @@ Pour la lancer :
 - Ouvre `Vitrine.csproj` dans Visual Studio 2022, puis **F5** (ou `dotnet run`).
 - La barre de recherche en haut de la barre latérale filtre la liste des contrôles (tape « pass » : il ne reste que les mots de passe).
 - Clique un contrôle dans la liste (ou une carte de l'accueil) : sa page s'affiche.
+- **En bas de chaque page, un bloc « Code à copier-coller »** : le XAML complet du contrôle, avec toutes ses propriétés (valeurs d'exemple = les défauts). Tu sélectionnes, tu copies, tu colles dans ton XAML (il faut juste le `xmlns:custom`, déjà en haut de la fenêtre de la vitrine).
+- Les cartes d'exemples sont **blanches** : les contrôles y montrent leurs vrais défauts (fond blanc, texte noir). Chaque exemple ne change que la propriété qu'il montre — le reste, c'est le défaut.
 
 La vitrine est habillée en sombre (c'est son décor), mais **le look par défaut de la librairie n'a pas changé** : fond blanc classique, texte noir, lisible sur thème blanc.
 
@@ -168,6 +170,7 @@ Deux règles fixes (pas de propriété pour les changer) :
 
 La librairie part du principe que tout est sur **thème blanc, avec les couleurs par défaut de WPF**. Les défauts sont choisis pour être lisibles sur fond blanc :
 
+- **Fond blanc + texte noir par défaut sur les 12 contrôles** (bouton, case, interrupteur, carte, curseur, liste, champs, recherche, nombre, liste déroulante). Aucun contrôle n'hérite une couleur claire illisible sur fond blanc.
 - Texte **noir** par défaut sur les champs (fond blanc), bordure grise `#FFABADB3`, taille de base 200 × 32.
 - Le Watermark est gris, le Placeholder est gris, le titre des cartes est noir.
 - La sélection dans les listes est **cyan + texte noir** (lisible), jamais le bleu clair du système sur fond blanc.
@@ -294,7 +297,7 @@ Une liste. La sélection est stylée, et les lignes peuvent contenir n'importe q
 | `SelectedItemForeground` | `Brush` | Noir | Le texte de la ligne choisie. |
 | `SelectedItemBorderBrush` | `Brush` | Cyan `#FF00D1FF` | La bordure de la ligne choisie. |
 
-Le survol d'une ligne montre un fond bleu très clair (texte inchangé, noir par défaut : lisible). **Quand on survole une ligne déjà choisie, c'est sa sélection qui reste** (son fond et son texte) : le survol ne cache jamais la sélection, donc un texte blanc sur fond bleu foncé reste lisible.
+Le survol d'une ligne montre un fond bleu très clair et le texte devient **noir** (lisible sur le fond clair, même si le texte de la liste est blanc, comme la navigation). **Quand on survole une ligne déjà choisie, c'est sa sélection qui reste** (son fond et son texte) : le survol ne cache jamais la sélection, donc un texte blanc sur fond bleu foncé reste lisible.
 
 ```xml
 <custom:ListBoxCustom Width="320" Height="180" SelectedItem="Code">
@@ -445,6 +448,7 @@ Un nombre avec boutons +/−, molette et flèches. Maintenir un bouton = répét
 | `Maximum` | `double` | `100` | La borne haute. |
 | `Increment` | `double` | `1` | Le pas (+/−, molette, flèches). |
 | `Format` | `string` | `null` (= nombre brut) | Le format d'affichage : `"0.00"` (2 décimales), `"C2"` (prix), `"0' %'"` (pourcentage). C'est de l'affichage seulement : quand on tape, on tape le nombre brut. |
+| `Symbols` | `StepSymbols` | `Triangles` | Les symboles des boutons +/−, comme `Visibility` en WPF : des options prédéfinies, pas du texte libre. `Triangles` = `"▲"` / `"▼"` (défaut), `PlusMinus` = `"+"` / `"-"`, `Chevrons` = `"˄"` / `"˅"`, `Arrows` = `"↑"` / `"↓"`. |
 | `CornerRadius` | `CornerRadius` | `10` | Les coins arrondis du champ. |
 | `FocusedBorderBrush` | `Brush` | `null` (= `BorderBrush`) | La couleur de la bordure quand le champ a le focus. |
 | `Neon` / `NeonRadius` / `NeonColor` | `bool` / `double` / `Color` | `False` / `20` / `Cyan` | La lueur. |
@@ -454,6 +458,8 @@ Un nombre avec boutons +/−, molette et flèches. Maintenir un bouton = répét
 <custom:NumericUpDownCustom Value="9.99" Minimum="0" Maximum="100" Increment="0.5" Format="C2" />
 <custom:NumericUpDownCustom Value="50" Minimum="0" Maximum="100" Increment="5" Format="0' %'" />
 <custom:NumericUpDownCustom Value="25" Minimum="0" Maximum="120" />
+<custom:NumericUpDownCustom Value="5" Symbols="PlusMinus" />
+<custom:NumericUpDownCustom Value="5" Symbols="Chevrons" />
 ```
 
 ### ComboBoxCustom
@@ -560,6 +566,10 @@ La loupe montre un curseur « main » quand la souris passe dessus : on voit qu'
 - **v14** — Thème blanc : sélection de la liste déroulante lisible + la liste suit le champ quand on défile + titre des cartes noir par défaut + survol des lignes + voiles de survol gris.
 - **v15** — Bouton avec icône (`Icon` / `IconWidth` / `IconSpacing`) + clic sur la loupe (`SearchIconClicked`) + `Format` du nombre + `TitleFontWeight`.
 - **v16** — Le survol ne cache plus la sélection (ListBox + liste du ComboBox) + Watermark aligné avec le curseur + texte du champ du ComboBox lié au `Foreground` (noir par défaut).
+- **v17** — Défauts nettoyés (fond blanc + texte noir sur les 12 contrôles, fini le gris pâle sur gris pâle) + cartes d'exemples claires dans la vitrine (les exemples montrent les vrais défauts) + un bloc « Code à copier-coller » par contrôle (toutes les propriétés).
+- **v18** — Le survol met le texte en noir (ListBox + liste du ComboBox) : un texte blanc ne reste plus blanc sur le fond clair du survol.
+- **v19** — `NumericUpDownCustom` : `UpText` / `DownText` — les symboles des boutons +/− sont modifiables (`"+"` / `"-"`, `"˄"` / `"˅"`, `"↑"` / `"↓"`... ; défaut `"▲"` / `"▼"`).
+- **v20** — `UpText` / `DownText` **retirés**, remplacés par `Symbols` (enum `StepSymbols`, comme `Visibility` en WPF : des options prédéfinies, pas du texte libre) : `Triangles` (défaut), `PlusMinus`, `Chevrons`, `Arrows`.
 
 Le compteur `VERSION` est en tête de `CustomObjectWPF.cs`, avec l'historique : **+1 à chaque modification**.
 
