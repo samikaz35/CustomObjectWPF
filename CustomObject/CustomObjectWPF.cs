@@ -1,6 +1,6 @@
 // ============================================================================
 // CustomObjectWPF — contrôles personnalisés (WPF)
-// VERSION : 11
+// VERSION : 15
 // RÈGLE : incrémenter VERSION de 1 à CHAQUE modification du fichier
 // (même une petite), et ajouter une ligne dans l'historique ci-dessous.
 // Ça permet de savoir quelle version du fichier on a sous les yeux.
@@ -33,6 +33,25 @@
 //        sans opacité) + SearchBoxCustom : ClearIconColor (couleur du X
 //        seule), SearchIcon/ClearIcon (images perso à la place de la
 //        loupe et du X, comme les yeux).
+//   v12 — Loupe + X INTÉGRÉS en base64 dans le .cs (comme les yeux) :
+//        les formes dessinées sont retirées, les icônes sont des images
+//        noires 512x512 teintables par IconColor/ClearIconColor.
+//   v13 — Néon sur CardCustom + watermark toujours un peu transparent
+//        (0,6, comme un vrai placeholder) + texte noir par défaut sur
+//        les champs (le texte, le curseur et les points étaient
+//        invisibles dans une fenêtre sombre) + watermark derrière le
+//        texte (le curseur reste visible) + IconHoverColor /
+//        ClearIconHoverColor sur SearchBoxCustom (comme EyeHoverColor).
+//   v14 — Thème blanc : sélection de la liste déroulante lisible
+//        (SelectedItemBackground/Foreground/BorderBrush, comme
+//        ListBoxCustom) + la liste suit le champ quand on défile +
+//        titre de CardCustom noir par défaut + survol des lignes de
+//        ListBoxCustom + voiles de survol gris (le voile blanc était
+//        invisible sur les champs blancs).
+//   v15 — Bouton avec icône (Icon/IconWidth/IconSpacing) + clic sur la
+//        loupe de la recherche (événement SearchIconClicked, sa propre
+//        action) + Format d'affichage du nombre (décimales, prix, %)
+//        + graisse du titre des cartes (TitleFontWeight).
 // ============================================================================
 using System.Globalization;
 using System.Windows;
@@ -90,6 +109,24 @@ namespace CustomObjectWPF.Model
         {
             double d = value is double v ? v : 0;
             return new Thickness(d, 0, 0, 0);
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotSupportedException();
+        }
+    }
+
+    /// <summary>
+    /// Convertit un double (espacement) en Thickness avec marge à droite.
+    /// Utilisé pour l'espacement icône/texte du ButtonCustom.
+    /// </summary>
+    public class DoubleToRightMarginConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            double d = value is double v ? v : 0;
+            return new Thickness(0, 0, d, 0);
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
@@ -204,6 +241,36 @@ namespace CustomObjectWPF.Model
 
         #endregion
 
+        /// <summary>
+        /// Image affichée à gauche du texte (null = pas d'icône).
+        /// </summary>
+        public static readonly DependencyProperty IconProperty =
+            DependencyProperty.Register(
+                nameof(Icon),
+                typeof(Media.ImageSource),
+                typeof(ButtonCustom),
+                new PropertyMetadata(null));
+
+        /// <summary>
+        /// Taille (en px) de l'icône, en largeur et en hauteur (carrée). Défaut : 20.
+        /// </summary>
+        public static readonly DependencyProperty IconWidthProperty =
+            DependencyProperty.Register(
+                nameof(IconWidth),
+                typeof(double),
+                typeof(ButtonCustom),
+                new PropertyMetadata(20.0));
+
+        /// <summary>
+        /// Espacement (en px) entre l'icône et le texte. Défaut : 8.
+        /// </summary>
+        public static readonly DependencyProperty IconSpacingProperty =
+            DependencyProperty.Register(
+                nameof(IconSpacing),
+                typeof(double),
+                typeof(ButtonCustom),
+                new PropertyMetadata(8.0));
+
         #region Propriétés
 
         public bool Neon
@@ -261,6 +328,24 @@ namespace CustomObjectWPF.Model
         }
 
         #endregion
+
+        public Media.ImageSource? Icon
+        {
+            get => (Media.ImageSource?)GetValue(IconProperty);
+            set => SetValue(IconProperty, value);
+        }
+
+        public double IconWidth
+        {
+            get => (double)GetValue(IconWidthProperty);
+            set => SetValue(IconWidthProperty, value);
+        }
+
+        public double IconSpacing
+        {
+            get => (double)GetValue(IconSpacingProperty);
+            set => SetValue(IconSpacingProperty, value);
+        }
 
         #region Constructeur
 
@@ -429,6 +514,43 @@ namespace CustomObjectWPF.Model
                     RelativeSource = new WPF.Data.RelativeSource(WPF.Data.RelativeSourceMode.TemplatedParent)
                 });
 
+            // Contenu : une rangée horizontale (icône + texte), centrée.
+            FrameworkElementFactory contentPanel = new(typeof(Controls.StackPanel));
+            contentPanel.SetValue(Controls.StackPanel.OrientationProperty, Controls.Orientation.Horizontal);
+            contentPanel.SetValue(FrameworkElement.HorizontalAlignmentProperty, WPF.HorizontalAlignment.Center);
+            contentPanel.SetValue(FrameworkElement.VerticalAlignmentProperty, VerticalAlignment.Center);
+
+            FrameworkElementFactory iconImage = new(typeof(Controls.Image));
+            iconImage.Name = "iconImage";
+            iconImage.SetBinding(
+                Controls.Image.SourceProperty,
+                new WPF.Data.Binding(nameof(Icon))
+                {
+                    RelativeSource = new WPF.Data.RelativeSource(WPF.Data.RelativeSourceMode.TemplatedParent)
+                });
+            iconImage.SetBinding(
+                FrameworkElement.WidthProperty,
+                new WPF.Data.Binding(nameof(IconWidth))
+                {
+                    RelativeSource = new WPF.Data.RelativeSource(WPF.Data.RelativeSourceMode.TemplatedParent)
+                });
+            iconImage.SetBinding(
+                FrameworkElement.HeightProperty,
+                new WPF.Data.Binding(nameof(IconWidth))
+                {
+                    RelativeSource = new WPF.Data.RelativeSource(WPF.Data.RelativeSourceMode.TemplatedParent)
+                });
+            iconImage.SetValue(Controls.Image.StretchProperty, Media.Stretch.Uniform);
+            iconImage.SetValue(FrameworkElement.VerticalAlignmentProperty, VerticalAlignment.Center);
+            // L'espacement icône/texte est la marge droite de l'icône.
+            iconImage.SetBinding(
+                FrameworkElement.MarginProperty,
+                new WPF.Data.Binding(nameof(IconSpacing))
+                {
+                    RelativeSource = new WPF.Data.RelativeSource(WPF.Data.RelativeSourceMode.TemplatedParent),
+                    Converter = new DoubleToRightMarginConverter()
+                });
+
             FrameworkElementFactory presenter = new(typeof(Controls.ContentPresenter));
 
             presenter.SetBinding(
@@ -446,11 +568,28 @@ namespace CustomObjectWPF.Model
                 Controls.ContentPresenter.VerticalAlignmentProperty,
                 VerticalAlignment.Center);
 
+            contentPanel.AppendChild(iconImage);
+            contentPanel.AppendChild(presenter);
+
             grid.AppendChild(glowBorder);
-            grid.AppendChild(presenter);
+            grid.AppendChild(contentPanel);
 
             Controls.ControlTemplate template = new(typeof(ButtonCustom));
             template.VisualTree = grid;
+
+            // Pas d'icône : on cache l'image (sinon elle prend de la place).
+            Trigger noIconTrigger = new()
+            {
+                Property = IconProperty,
+                Value = null
+            };
+            noIconTrigger.Setters.Add(new Setter
+            {
+                Property = UIElement.VisibilityProperty,
+                TargetName = "iconImage",
+                Value = Visibility.Collapsed
+            });
+            template.Triggers.Add(noIconTrigger);
 
             // Survol : fond HoverBackground, ou Background si non défini
             // (FirstNonNullBrushConverter : premier Brush non nul).
@@ -1145,6 +1284,7 @@ namespace CustomObjectWPF.Model
     /// <summary>
     /// Panneau "carte" : conteneur arrondi avec titre optionnel.
     /// Utile pour structurer des sections (ex: panneau d'options).
+    /// Néon disponible comme sur les autres contrôles.
     /// </summary>
     public class CardCustom : ContentControl
     {
@@ -1155,7 +1295,63 @@ namespace CustomObjectWPF.Model
                 nameof(CornerRadius),
                 typeof(CornerRadius),
                 typeof(CardCustom),
-                new PropertyMetadata(new CornerRadius(10)));
+                new PropertyMetadata(new CornerRadius(0)));
+
+        /// <summary>
+        /// Lueur autour de la carte. Défaut : false (pas de lueur).
+        /// </summary>
+        public static readonly DependencyProperty NeonProperty =
+            DependencyProperty.Register(
+                nameof(Neon),
+                typeof(bool),
+                typeof(CardCustom),
+                new PropertyMetadata(false, OnNeonPropertyChanged));
+
+        /// <summary>
+        /// Portée de la lueur (flou, en px). Défaut : 20.
+        /// </summary>
+        public static readonly DependencyProperty NeonRadiusProperty =
+            DependencyProperty.Register(
+                nameof(NeonRadius),
+                typeof(double),
+                typeof(CardCustom),
+                new PropertyMetadata(20.0, OnNeonPropertyChanged));
+
+        /// <summary>
+        /// Couleur de la lueur. Défaut : Cyan.
+        /// </summary>
+        public static readonly DependencyProperty NeonColorProperty =
+            DependencyProperty.Register(
+                nameof(NeonColor),
+                typeof(Media.Color),
+                typeof(CardCustom),
+                new PropertyMetadata(Media.Colors.Cyan, OnNeonPropertyChanged));
+
+        public bool Neon
+        {
+            get => (bool)GetValue(NeonProperty);
+            set => SetValue(NeonProperty, value);
+        }
+
+        public double NeonRadius
+        {
+            get => (double)GetValue(NeonRadiusProperty);
+            set => SetValue(NeonRadiusProperty, value);
+        }
+
+        public Media.Color NeonColor
+        {
+            get => (Media.Color)GetValue(NeonColorProperty);
+            set => SetValue(NeonColorProperty, value);
+        }
+
+        private static void OnNeonPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if (d is CardCustom card)
+            {
+                card.RefreshNeon();
+            }
+        }
 
         /// <summary>
         /// Titre affiché en haut de la carte. Vide = pas de titre.
@@ -1172,7 +1368,7 @@ namespace CustomObjectWPF.Model
                 nameof(TitleForeground),
                 typeof(Brush),
                 typeof(CardCustom),
-                new PropertyMetadata(Media.Brushes.White));
+                new PropertyMetadata(Media.Brushes.Black));
 
         public static readonly DependencyProperty TitleFontSizeProperty =
             DependencyProperty.Register(
@@ -1180,6 +1376,16 @@ namespace CustomObjectWPF.Model
                 typeof(double),
                 typeof(CardCustom),
                 new PropertyMetadata(14.0));
+
+        /// <summary>
+        /// Graisse du titre. Défaut : SemiBold.
+        /// </summary>
+        public static readonly DependencyProperty TitleFontWeightProperty =
+            DependencyProperty.Register(
+                nameof(TitleFontWeight),
+                typeof(FontWeight),
+                typeof(CardCustom),
+                new PropertyMetadata(FontWeights.SemiBold));
 
         #endregion
 
@@ -1209,6 +1415,12 @@ namespace CustomObjectWPF.Model
             set => SetValue(TitleFontSizeProperty, value);
         }
 
+        public FontWeight TitleFontWeight
+        {
+            get => (FontWeight)GetValue(TitleFontWeightProperty);
+            set => SetValue(TitleFontWeightProperty, value);
+        }
+
         #endregion
 
         #region Constructeur
@@ -1216,6 +1428,37 @@ namespace CustomObjectWPF.Model
         public CardCustom()
         {
             Template = BuildTemplate();
+            RefreshNeon(); // fallback sur le contrôle tant que le template n'est pas appliqué
+        }
+
+        #endregion
+
+        #region Néon (lueur derrière le contenu)
+
+        // La lueur est appliquée sur le Border interne ("glowBorder"), PAS sur le
+        // contrôle entier : le titre et le contenu restent nets (sinon ClearType
+        // désactivé + flou).
+        private Border? _glowBorder;
+
+        public override void OnApplyTemplate()
+        {
+            base.OnApplyTemplate();
+            _glowBorder = Template.FindName("glowBorder", this) as Border;
+            RefreshNeon();
+        }
+
+        private void RefreshNeon()
+        {
+            if (_glowBorder != null)
+            {
+                NeonHelper.ApplyEffect(_glowBorder, Neon, NeonColor, NeonRadius);
+                Effect = null; // pas de double lueur : elle est sur la couche interne
+            }
+            else
+            {
+                // Template pas encore appliqué (constructeur) : fallback temporaire
+                NeonHelper.ApplyEffect(this, Neon, NeonColor, NeonRadius);
+            }
         }
 
         #endregion
@@ -1224,7 +1467,10 @@ namespace CustomObjectWPF.Model
 
         private Controls.ControlTemplate BuildTemplate()
         {
+            FrameworkElementFactory grid = new(typeof(Controls.Grid));
+
             FrameworkElementFactory border = new(typeof(Controls.Border));
+            border.Name = "glowBorder";
 
             border.SetBinding(
                 Controls.Border.BackgroundProperty,
@@ -1250,9 +1496,11 @@ namespace CustomObjectWPF.Model
                 {
                     RelativeSource = new WPF.Data.RelativeSource(WPF.Data.RelativeSourceMode.TemplatedParent)
                 });
-            border.SetValue(Controls.Border.PaddingProperty, new Thickness(12));
-
             FrameworkElementFactory panel = new(typeof(Controls.StackPanel));
+            // Même retrait que l'ancien Padding (12) du Border : le contenu
+            // ne touche pas les bords, mais le Border reste la couche de
+            // fond (c'est elle qui porte le néon, pas le contenu).
+            panel.SetValue(FrameworkElement.MarginProperty, new Thickness(12));
 
             FrameworkElementFactory title = new(typeof(Controls.TextBlock));
             title.Name = "cardTitle";
@@ -1274,7 +1522,12 @@ namespace CustomObjectWPF.Model
                 {
                     RelativeSource = new WPF.Data.RelativeSource(WPF.Data.RelativeSourceMode.TemplatedParent)
                 });
-            title.SetValue(Controls.TextBlock.FontWeightProperty, FontWeights.SemiBold);
+            title.SetBinding(
+                Controls.TextBlock.FontWeightProperty,
+                new WPF.Data.Binding(nameof(TitleFontWeight))
+                {
+                    RelativeSource = new WPF.Data.RelativeSource(WPF.Data.RelativeSourceMode.TemplatedParent)
+                });
             title.SetValue(FrameworkElement.MarginProperty, new Thickness(0, 0, 0, 8));
 
             FrameworkElementFactory presenter = new(typeof(Controls.ContentPresenter));
@@ -1287,10 +1540,11 @@ namespace CustomObjectWPF.Model
 
             panel.AppendChild(title);
             panel.AppendChild(presenter);
-            border.AppendChild(panel);
+            grid.AppendChild(border);
+            grid.AppendChild(panel);
 
             Controls.ControlTemplate template = new(typeof(CardCustom));
-            template.VisualTree = border;
+            template.VisualTree = grid;
 
             // Pas de titre -> on cache la zone de titre
             Trigger noTitleTrigger = new()
@@ -2038,6 +2292,21 @@ namespace CustomObjectWPF.Model
             });
             itemTemplate.Triggers.Add(selectedTrigger);
 
+            // Survolé : fond bleu très clair, texte inchangé (noir par défaut) : lisible.
+            Trigger hoverTrigger = new()
+            {
+                Property = UIElement.IsMouseOverProperty,
+                Value = true
+            };
+            hoverTrigger.Setters.Add(new Setter
+            {
+                Property = Controls.Border.BackgroundProperty,
+                TargetName = "itemBorder",
+                Value = new SolidColorBrush(
+                    (Color)ColorConverter.ConvertFromString("#FFE5F1FB"))
+            });
+            itemTemplate.Triggers.Add(hoverTrigger);
+
             style.Setters.Add(new Setter(Controls.Control.TemplateProperty, itemTemplate));
 
             return style;
@@ -2185,6 +2454,12 @@ namespace CustomObjectWPF.Model
             // verticalement dans un champ haut (ex : 42 px, comme ton login).
             SetCurrentValue(PaddingProperty, new Thickness(8, 2, 8, 2));
             SetCurrentValue(VerticalContentAlignmentProperty, VerticalAlignment.Center);
+            // Texte noir par défaut : le fond du champ est blanc par défaut,
+            // donc le texte (et le curseur, et les points du mot de passe)
+            // doit être sombre, sinon il est invisible dans une fenêtre
+            // sombre (Foreground clair hérité sur fond blanc). Un Style ou
+            // une valeur en XAML reprend le dessus normalement.
+            SetCurrentValue(ForegroundProperty, Media.Brushes.Black);
 
             Template = BuildTemplate();
             RefreshNeon(); // fallback sur le contrôle tant que le template n'est pas appliqué
@@ -2282,12 +2557,16 @@ namespace CustomObjectWPF.Model
             // (trigger sur Text/Password = ""). Ne capte pas les clics :
             // on peut cliquer "à travers" pour mettre le focus dans le champ.
             // Taille = celle du texte (FontSize du contrôle), couleur =
-            // WatermarkColor, sans opacité (couleur pleine).
+            // WatermarkColor, toujours un peu transparente (0,6) : la couleur
+            // se choisit, la transparence est fixe (pas de propriété pour ça).
             FrameworkElementFactory watermark = new(typeof(Controls.TextBlock));
             watermark.Name = "watermark";
             watermark.SetValue(FrameworkElement.VerticalAlignmentProperty, VerticalAlignment.Center);
             watermark.SetValue(UIElement.IsHitTestVisibleProperty, false);
             watermark.SetValue(UIElement.VisibilityProperty, Visibility.Collapsed);
+            // Toujours un peu transparente (0,6), comme un vrai placeholder :
+            // la couleur se choisit avec WatermarkColor, la transparence est fixe.
+            watermark.SetValue(UIElement.OpacityProperty, 0.6);
             watermark.SetBinding(
                 FrameworkElement.MarginProperty,
                 new WPF.Data.Binding(nameof(Padding)) { RelativeSource = templatedParent });
@@ -2301,9 +2580,11 @@ namespace CustomObjectWPF.Model
                 Controls.TextBlock.FontSizeProperty,
                 new WPF.Data.Binding(nameof(FontSize)) { RelativeSource = templatedParent });
 
+            // Le watermark est DERRIÈRE le texte : le curseur (peint par le
+            // ScrollViewer) reste visible, juste devant la première lettre.
             grid.AppendChild(border);
-            grid.AppendChild(scroll);
             grid.AppendChild(watermark);
+            grid.AppendChild(scroll);
 
             Controls.ControlTemplate template = new(typeof(TextBoxCustom));
             template.VisualTree = grid;
@@ -2580,6 +2861,12 @@ namespace CustomObjectWPF.Model
             // Mêmes défauts neutres que TextBoxCustom (voir son constructeur).
             SetCurrentValue(PaddingProperty, new Thickness(8, 2, 8, 2));
             SetCurrentValue(VerticalContentAlignmentProperty, VerticalAlignment.Center);
+            // Texte noir par défaut : le fond du champ est blanc par défaut,
+            // donc le texte (et le curseur, et les points du mot de passe)
+            // doit être sombre, sinon il est invisible dans une fenêtre
+            // sombre (Foreground clair hérité sur fond blanc). Un Style ou
+            // une valeur en XAML reprend le dessus normalement.
+            SetCurrentValue(ForegroundProperty, Media.Brushes.Black);
 
             Template = BuildTemplate();
             RefreshNeon(); // fallback sur le contrôle tant que le template n'est pas appliqué
@@ -2782,12 +3069,16 @@ namespace CustomObjectWPF.Model
             // (trigger sur Text/Password = ""). Ne capte pas les clics :
             // on peut cliquer "à travers" pour mettre le focus dans le champ.
             // Taille = celle du texte (FontSize du contrôle), couleur =
-            // WatermarkColor, sans opacité (couleur pleine).
+            // WatermarkColor, toujours un peu transparente (0,6) : la couleur
+            // se choisit, la transparence est fixe (pas de propriété pour ça).
             FrameworkElementFactory watermark = new(typeof(Controls.TextBlock));
             watermark.Name = "watermark";
             watermark.SetValue(FrameworkElement.VerticalAlignmentProperty, VerticalAlignment.Center);
             watermark.SetValue(UIElement.IsHitTestVisibleProperty, false);
             watermark.SetValue(UIElement.VisibilityProperty, Visibility.Collapsed);
+            // Toujours un peu transparente (0,6), comme un vrai placeholder :
+            // la couleur se choisit avec WatermarkColor, la transparence est fixe.
+            watermark.SetValue(UIElement.OpacityProperty, 0.6);
             watermark.SetBinding(
                 FrameworkElement.MarginProperty,
                 new WPF.Data.Binding(nameof(Padding)) { RelativeSource = templatedParent });
@@ -2801,9 +3092,11 @@ namespace CustomObjectWPF.Model
                 Controls.TextBlock.FontSizeProperty,
                 new WPF.Data.Binding(nameof(FontSize)) { RelativeSource = templatedParent });
 
+            // Le watermark est DERRIÈRE le champ : les points du mot de passe
+            // et le curseur peignent par-dessus, toujours visibles.
             grid.AppendChild(border);
-            grid.AppendChild(innerPwd);
             grid.AppendChild(watermark);
+            grid.AppendChild(innerPwd);
 
             Controls.ControlTemplate template = new(typeof(PasswordBoxCustom));
             template.VisualTree = grid;
@@ -3744,6 +4037,12 @@ namespace CustomObjectWPF.Model
             // Mêmes défauts neutres que TextBoxCustom (voir son constructeur).
             SetCurrentValue(PaddingProperty, new Thickness(8, 2, 8, 2));
             SetCurrentValue(VerticalContentAlignmentProperty, VerticalAlignment.Center);
+            // Texte noir par défaut : le fond du champ est blanc par défaut,
+            // donc le texte (et le curseur, et les points du mot de passe)
+            // doit être sombre, sinon il est invisible dans une fenêtre
+            // sombre (Foreground clair hérité sur fond blanc). Un Style ou
+            // une valeur en XAML reprend le dessus normalement.
+            SetCurrentValue(ForegroundProperty, Media.Brushes.Black);
 
             Template = BuildTemplate();
             RefreshNeon(); // fallback sur le contrôle tant que le template n'est pas appliqué
@@ -4248,13 +4547,17 @@ namespace CustomObjectWPF.Model
             // (trigger sur Text/Password = ""). Ne capte pas les clics :
             // on peut cliquer "à travers" pour mettre le focus dans le champ.
             // Taille = celle du texte (FontSize du contrôle), couleur =
-            // WatermarkColor, sans opacité (couleur pleine).
+            // WatermarkColor, toujours un peu transparente (0,6) : la couleur
+            // se choisit, la transparence est fixe (pas de propriété pour ça).
             FrameworkElementFactory watermark = new(typeof(Controls.TextBlock));
             watermark.Name = "watermark";
             watermark.SetValue(Controls.Grid.ColumnProperty, 0);
             watermark.SetValue(FrameworkElement.VerticalAlignmentProperty, VerticalAlignment.Center);
             watermark.SetValue(UIElement.IsHitTestVisibleProperty, false);
             watermark.SetValue(UIElement.VisibilityProperty, Visibility.Collapsed);
+            // Toujours un peu transparente (0,6), comme un vrai placeholder :
+            // la couleur se choisit avec WatermarkColor, la transparence est fixe.
+            watermark.SetValue(UIElement.OpacityProperty, 0.6);
             watermark.SetBinding(
                 Controls.TextBlock.TextProperty,
                 new WPF.Data.Binding(nameof(Watermark)) { RelativeSource = templatedParent });
@@ -4265,11 +4568,13 @@ namespace CustomObjectWPF.Model
                 Controls.TextBlock.FontSizeProperty,
                 new WPF.Data.Binding(nameof(FontSize)) { RelativeSource = templatedParent });
 
+            // Le watermark est DERRIÈRE les deux champs : les points / le
+            // texte et le curseur peignent par-dessus, toujours visibles.
+            grid.AppendChild(watermark);
             grid.AppendChild(pwdBox);
             grid.AppendChild(txtBox);
             grid.AppendChild(revealButton);
             grid.AppendChild(eyeGrid);
-            grid.AppendChild(watermark);
             rootGrid.AppendChild(border);
             rootGrid.AppendChild(grid);
 
@@ -4376,7 +4681,7 @@ namespace CustomObjectWPF.Model
             Controls.ControlTemplate template = new(typeof(ToggleButton));
             template.VisualTree = border;
 
-            // Survol : léger voile blanc (visible sur fond sombre, discret sur fond clair).
+            // Survol : léger voile gris (visible sur fond clair : le champ est blanc par défaut).
             Trigger hoverTrigger = new()
             {
                 Property = UIElement.IsMouseOverProperty,
@@ -4386,7 +4691,7 @@ namespace CustomObjectWPF.Model
             {
                 Property = Controls.Border.BackgroundProperty,
                 TargetName = "eyeButtonBorder",
-                Value = new SolidColorBrush(Color.FromArgb(0x1F, 0xFF, 0xFF, 0xFF))
+                Value = new SolidColorBrush(Color.FromArgb(0x1F, 0x00, 0x00, 0x00))
             });
             template.Triggers.Add(hoverTrigger);
 
@@ -4405,8 +4710,10 @@ namespace CustomObjectWPF.Model
     /// effacer (X) à droite qui n'apparaît que quand il y a du texte, et
     /// un texte d'aide (Watermark, ex. "Rechercher...") quand le champ
     /// est vide. La touche Entrée déclenche l'événement Search.
-    /// La loupe est dessinée en formes (cercle + poignée) : nette à
-    /// toutes les tailles, sans image.
+    /// La loupe et le X sont des images intégrées en base64 dans le .cs
+    /// (comme les yeux) : le fichier voyage seul, sans dossier d'images.
+    /// IconColor / ClearIconColor les teintent, SearchIcon / ClearIcon
+    /// les remplacent par tes propres images.
     /// </summary>
     public class SearchBoxCustom : Controls.TextBox
     {
@@ -4434,49 +4741,76 @@ namespace CustomObjectWPF.Model
                 new PropertyMetadata(null));
 
         /// <summary>
-        /// Couleur de la loupe et du X. null (défaut) = Foreground.
+        /// Couleur de la loupe (teinte de l'image intégrée). null
+        /// (défaut) = noire.
         /// </summary>
         public static readonly DependencyProperty IconColorProperty =
             DependencyProperty.Register(
                 nameof(IconColor),
                 typeof(Brush),
                 typeof(SearchBoxCustom),
-                new PropertyMetadata(null));
+                new PropertyMetadata(null, OnIconColorChanged));
 
         /// <summary>
-        /// Couleur du X (effacer) seul. null (défaut) = IconColor, puis
-        /// Foreground si IconColor n'est pas définie non plus.
+        /// Couleur de la loupe quand la souris est dessus. null
+        /// (défaut) = IconColor (pas de changement au survol).
+        /// </summary>
+        public static readonly DependencyProperty IconHoverColorProperty =
+            DependencyProperty.Register(
+                nameof(IconHoverColor),
+                typeof(Brush),
+                typeof(SearchBoxCustom),
+                new PropertyMetadata(null, OnIconColorChanged));
+
+        /// <summary>
+        /// Couleur du X (effacer), teinte de l'image intégrée.
+        /// null (défaut) = noire.
         /// </summary>
         public static readonly DependencyProperty ClearIconColorProperty =
             DependencyProperty.Register(
                 nameof(ClearIconColor),
                 typeof(Brush),
                 typeof(SearchBoxCustom),
-                new PropertyMetadata(null));
+                new PropertyMetadata(null, OnClearIconColorChanged));
 
         /// <summary>
-        /// Image perso à la place de la loupe dessinée (ex. un PNG).
-        /// null (défaut) = la loupe en formes. L'image garde ses propres
-        /// couleurs (elle n'est pas teintée par IconColor, comme les yeux).
+        /// Couleur du X quand la souris est dessus. null
+        /// (défaut) = ClearIconColor (pas de changement au survol).
+        /// </summary>
+        public static readonly DependencyProperty ClearIconHoverColorProperty =
+            DependencyProperty.Register(
+                nameof(ClearIconHoverColor),
+                typeof(Brush),
+                typeof(SearchBoxCustom),
+                new PropertyMetadata(null, OnClearIconColorChanged));
+
+        /// <summary>
+        /// Image de la loupe. Défaut = la loupe noire intégrée en base64
+        /// (voir la région "Images intégrées"). Mets ton propre PNG pour
+        /// la remplacer. Teintée par IconColor (couleur pleine seulement ;
+        /// une image non bitmap s'affiche telle quelle, non teintée).
+        /// null = pas de loupe du tout.
         /// </summary>
         public static readonly DependencyProperty SearchIconProperty =
             DependencyProperty.Register(
                 nameof(SearchIcon),
                 typeof(Media.ImageSource),
                 typeof(SearchBoxCustom),
-                new PropertyMetadata(null, OnSearchIconChanged));
+                new PropertyMetadata(EmbeddedIcon(SearchIconBase64), OnSearchIconChanged));
 
         /// <summary>
-        /// Image perso à la place du X (ex. un PNG).
-        /// null (défaut) = le X en texte. L'image garde ses propres
-        /// couleurs (elle n'est pas teintée par ClearIconColor).
+        /// Image du X (effacer). Défaut = le X noir intégré en base64
+        /// (voir la région "Images intégrées"). Mets ton propre PNG pour
+        /// le remplacer. Teinté par ClearIconColor (couleur pleine
+        /// seulement ; une image non bitmap s'affiche telle quelle).
+        /// null = pas de X du tout.
         /// </summary>
         public static readonly DependencyProperty ClearIconProperty =
             DependencyProperty.Register(
                 nameof(ClearIcon),
                 typeof(Media.ImageSource),
                 typeof(SearchBoxCustom),
-                new PropertyMetadata(null, OnClearIconChanged));
+                new PropertyMetadata(EmbeddedIcon(ClearIconBase64), OnClearIconChanged));
 
         /// <summary>
         /// Texte d'aide affiché quand le champ est vide (ex. "Rechercher...").
@@ -4541,10 +4875,22 @@ namespace CustomObjectWPF.Model
             set => SetValue(IconColorProperty, value);
         }
 
+        public Brush IconHoverColor
+        {
+            get => (Brush)GetValue(IconHoverColorProperty);
+            set => SetValue(IconHoverColorProperty, value);
+        }
+
         public Brush ClearIconColor
         {
             get => (Brush)GetValue(ClearIconColorProperty);
             set => SetValue(ClearIconColorProperty, value);
+        }
+
+        public Brush ClearIconHoverColor
+        {
+            get => (Brush)GetValue(ClearIconHoverColorProperty);
+            set => SetValue(ClearIconHoverColorProperty, value);
         }
 
         public Media.ImageSource SearchIcon
@@ -4595,10 +4941,170 @@ namespace CustomObjectWPF.Model
 
         private Controls.Button? _clearButton;
 
-        private Controls.Canvas? _loupeCanvas;
         private Controls.Image? _searchImage;
-        private Controls.TextBlock? _clearText;
         private Controls.Image? _clearImage;
+        private bool _isSearchIconHovered;
+        private bool _isClearIconHovered;
+
+        #endregion
+
+
+        #region Images intégrées (base64)
+
+        // Loupe + X noirs (512x512, fond transparent), intégrés dans le
+        // .cs pour que le fichier voyage seul, sans dossier d'images —
+        // exactement comme les yeux dans PasswordRevealCustom.
+        // Pour régénérer une icône (après l'avoir redessinée en noir
+        // sur fond transparent) :
+        //   [Convert]::ToBase64String([IO.File]::ReadAllBytes("C:\...\loupe.png"))
+        // puis remplacer le contenu de la constante (découpé en
+        // morceaux de 100 caractères).
+        private const string SearchIconBase64 =
+            "iVBORw0KGgoAAAANSUhEUgAAAgAAAAIACAYAAAD0eNT6AAARUUlEQVR4nO3cbXobya2AUcVP9r/lyQ+PY1sixSa6vgCcs4B7KTUK" +
+            "9bKtzMcHAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" +
+            "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAwBj/2f0B4ED/TPy/7cwBR7CM" +
+            "6Gbm5T6KcwlMZ9FQVYaL/l3OKzCMhUIFFS/7q5xhIMTyIKPOF/4rzjRwiWVBBi78OGcceMhy4FQu/fGcd+D/LARO4tJfx9mH5iwB" +
+            "dnPp72cPQEMOPju49M9lJ0ATDjsrufjzsBugOIec2Vz6+dkTUJCDzSwu/nrsCyjEgWY0F3999gYU4CAziou/H/sDEnOAucvFjz0C" +
+            "CTm4RLn4+cw+gUQcWN7l4ucVewUScFC5ysXPu+wXOJgDyisufu6yZ+BADibPuPgZzb6Bg/zY/QE4ksufGcwVHESR8ycLmlXsHtjM" +
+            "GwB+cfmzknmDzVQ4FjG72UOwgTcAvbn8OYE5hA2Ud08WLqeyk2ARbwD6cflzMvMJiwiAXixXMjCnsIDXbT1YqGRlR8Ek3gDU5/In" +
+            "M/MLkwiA2ixPKjDHMIHXazVZmFRlZ8Eg3gDU4/KnMvMNgwiAWixHOjDnMIAAqMNSpBPzDjcJgBosQzoy93CDAMjPEqQz8w9B/qI2" +
+            "L4sP/mafwRu8AcjJ5Q9fORfwBgGQjyUHzzkfcJEAyMVyg9ecE7hAAORhqcF1zgu8IABysMzgfc4NfEMAnM8SgzjnB54QAGezvOA+" +
+            "5wgeEADnsrRgHOcJPhEAANCQ/3LWmXxbOcPI8+GZnsHOg385DOdxUax1whnwzNc64ZnDdg7CWVwEc2Wad7MwV6ZZgCkcgnNY+ONV" +
+            "mm/zMV6l+YC3OQBnsNzH6DTPZmaMTjMDfzH8+1nk95hhM3SXGaKl/+7+ABBkaf/263chBIDLLNG9LOz3mNfrzNZ7zBbtGPp9LOjr" +
+            "zGmcObvOnNGKgd/DUr7GfI5j5q4xc7ThbwA4kSU8nr8TAP5i0a5nAT9nHtcxh8+ZQ1ow6GtZuo+Zw33M5GNmkvIM+ToW7Vfm7xzm" +
+            "8yvzSWn+BoAdLNbz+BsBaObH7g/QhKX6m8v/bJ7Pb84tpTns81kiP5m1fMzuT2aXkrwBYAULNCfPDQoTAHP5BuUSyc7zc44pyuGe" +
+            "p/vSMFv1mGkoxBsAZrAoa/JcoRABMEfnb0ouido6P9/O55qCOh/mWbouCbPUj1mHxLwBYAQLsSfPHRITAGN1/EbkEuit4/PveM4p" +
+            "SABwR8flz1fmABISAON0+1Zg6fOnbvPQ7bxTkAAgotuy5xpzAYkIgDE6fRuw5PlOp/nodO4pSADwjk7LnThzAgkIgPu6fAuw1HlH" +
+            "l3npcv4pSABwRZdlzljmBg4mAO7pUP+WOHd0mJ8Oe4CCBADf6bC8mc8cwYEEQFz16re0Gan6PFXfBxQkAACgIQEQU732q39bY4/q" +
+            "c1V9L1CMAOCz6kuavcwXHEIAvK9y5VvOrFB5zirvB4oRAADQkAB4T+W6r/ytjPNUnrfKe4JCBAAfH7WXMecyd7CRAMASZifzB5sI" +
+            "gOu81gOusi84ngDozbcvTmAOYQMBcE3Fmrd0OUnFeay4NyhEAABAQwKgp4rftsjPXMJCAuA1r/GAKPuDYwmAfnzL4mTmExYRAADQ" +
+            "kAD4XrXXd75dkUG1Oa22RyhCAABAQwKgj2rfqqjNvMJkAuA5r+2AUewTjiMAevBtiozMLUwkAACgIQHwWKXXdb5FkVml+a20VyhA" +
+            "AABAQwKgtkrfnujLHMMEAgAAGhIAX/l3OmAW+4VjCIC6vDalEvMMgwkAAGhIANTk2xIVmWsYSAD8zb/PAbPZMxxBAABAQwKgHq9J" +
+            "qcx8wyACAAAaEgAA0JAA+M0f5gCr2DdsJwBq8e+jdGDOYQABAAANCQAAaEgAAEBDAqAO/y5KJ+YdbhIAP/mLXGA1e4etBAAANCQA" +
+            "AKAhAQAADQmAGvxBFB2Ze7hBAABAQwIAABoSAADQkAAAgIYEgP8YB7CP/cM2AgAAGhIA+fmfQtGZ+YcgAQAADQkAAGhIAABAQwIA" +
+            "ABoSAADQkAAAgIYEAAA0JAAAoCEBAAANCQAAaEgAAEBDAgAAGhIAANCQAACAhgQAADQkAACgIQEAAA0JAABoSADk98/uDwAbmX8I" +
+            "EgAA0JAA+Pj4z+4PALRl/7CNAACAhgQAADQkAACgIQEAAA0JgBr8T6HoyNzDDQIAABoSAADQkAAAgIYEwE/+YxzAavYOWwmAOvxB" +
+            "FJ2Yd7hJAABAQwIAABoSAADQkACoxb+L0oE5hwEEwG/+IhdYxb5hOwEAAA0JAABoSADU499Hqcx8wyACAAAaEgB/84c5wGz2DEcQ" +
+            "ADV5TUpF5hoGEgAA0JAAqMu3JSoxzzCYAPjKv88Bs9gvHEMAAEBDAqA2r02pwBzDBAIAABoSAI9V+nc6357IrNL8VtorFCAAAKAh" +
+            "AdBDpW9R9GFuYSIB8JzXdcAo9gnHEQB9+DZFJuYVJhMAANCQAPhetdd2vlWRQbU5rbZHKEIAAEBDAqCfat+uqMV8wiIC4DWv74Ao" +
+            "+4NjCYCefMviROYSFhIAANCQALim4ms837Y4ScV5rLg3KEQA9FZx6ZKPOYQNBMB1ah64yr7geAIA377YyfzBJgKAjw9LmD3MHWwk" +
+            "AN5T+bWeZcxKleet8p6gEAEAAA0JgPdVrvvK38o4R+U5q7wfKEYA8Fnl5cx+5gsOIQBiqle+Jc0M1eeq+l6gGAEAAA0JgLjqtV/9" +
+            "2xprVZ+n6vuAggQA36m+tFnDHMGBBMA9Harf8uaODvPTYQ9QkADgig5LnPHMDRxMANzXpf4tc97RZV66nH8KEgC8o8tS5x5zAgkI" +
+            "gDE6fQuw3PlOp/nodO4pSAAQ0WnJc525gEQEwDjdvg1Y9vyp2zx0O+8UJAC4o9vS5zFzAAkJgLE6fiuw/Hvr+Pw7nnMKEgCM0PES" +
+            "wHOH1JTsHJ0Xo5mqz3xDAd4AzNF5SXS+HDro/Hw7n2sKEgDM0PmSqMxzhUIU7VwWphmrwBybYwryBmAuS8PlkZ3n5xxTlABgBZdI" +
+            "Tp4bFKZs17BIfzNz5zOvfzOzlOQNwBoWyG8ul7N5Pl/5nVCSi2kdS+Qr83cO8/maeaUUA72WJfuYOdzHTL7HrFKGYV7Pwn3OPK5j" +
+            "DuPMKSUY5D0s3++Zy3nM3hhmlPQM8R6W8DXmcxwzN575JDUDvI+FfJ05jTNnc5lN0jK8e1nO7zGv15mtdcwlKRnc/SzqGLP7lVna" +
+            "xzySjqHdz9K+xwyboVOYRVIxsGewwMfoNM9m5kydZpDkDOs5LPTxKs23+cij0txRmEE9iyU/V6Z5Nwu5ZZo1mjKk57H41zrhDHjm" +
+            "NZ0wW/CUAT2TC+EMI8+HZ9qTHcuxDOe5XBhQgz3LkX7s/gAAxYl5jiQAzuVbA9QhAjiOADibCIA6RABHEQDnEwFQhwjgGAIgBxEA" +
+            "dYgAjiAA8hABUIcIYDsBkIsIgDpEAFsJgHxEANQhAthGAOQkAqAOEcAWLpL8LA+owT5mKW8A8rM0oAYxz1ICoAYRADWIAJYRAHWI" +
+            "AKhBBLCEAKhFBEANIoDpBEA9IgBqEAFM5bKozQKB/OxppvAGoDaLA/IT8kwhAOoTAZCfCGA4l0MvlgjkZmczjDcAvVgekJuIZxgB" +
+            "0I8IgNxEAEO4DHqzSCAv+5tbvAHozQKBvAQ8t7gA+MUyYbU/94/5i7PHCfEGgF8sEVb6PG/mL048EeLQ8YiFwiyvdo7Zi7PPeYs3" +
+            "ADxikTDDlbkye3Hiibc4bLxiqXBXZM+Yuzh7nUsMCldZyLzr7n4xc3F2Oy8ZEt5lKfPKyL1i3uLsd75lQIiymPls1j4xa3F2PE8Z" +
+            "Du6ynFmxR8xZnD3PQwaDUSzoflbvDzMWZ9fzhaFgNEu6vp17w3zF2ff8xUAwi0Vdzyn7wmzFnfIMOYBhYDbLOr8T94S5ijvxebKB" +
+            "QWAlSzuPDLvBPMVleL5MZgjYweI+V7adYJbisj1rBjMA7GaB75d9D5ihuOzPnhs8fE5ika9T7eybnbhqs8BFHjynstDHq37ezUxc" +
+            "9dngAQ+dDCz2uG5n3KzEdZuV9jxwMrLkn3Omzccd5qcRD5sKOi98Z/ixzjNxl5lqwoOmqooXgPP6noozsIpZa8BDppsMl4JzOU6G" +
+            "530qc1icBwxfzbw0nLn1RECceS3MwwU6EAFx7omifuz+AAALuMTixFNRAgDoQgTEiYCCBADQiQiIEwHFCACgGxEQJwIKEQBARyIg" +
+            "TgQUIQCArkRAnAgoQAAAnYmAOBGQnAAAuhMBcSIgMQEAIALuEAFJCQCAn0RAnAhISAAA/CYC4kRAMgIA4G8iIE4EJCIAAL4SAXEi" +
+            "IAkBAPCYCIgTAQkIAIDnRECcCDicAAD4ngiIEwEHEwAAr4mAOBFwKAEAcI0IiBMBBxIAANeJgDgRcBgBAPAeERAnAg4iAADeJwLi" +
+            "RMAhBABAjAiIEwEHEAAAcSIgTgRsJgAA7hEBcSJgIwEAcJ8IiBMBmwgAgDFEQJwI2EAAAIwjAuJEwGICAGAsERAnAhYSAADjiYA4" +
+            "EbCIAACYQwTEiYAFBADAPCIgTgRMJgAA5hIBcSJgIgEAMJ8IiBMBkwgAgDVEQJwImEAAAKwjAuJEwGACAGAtERAnAgYSAADriYA4" +
+            "ETCIAADYQwTEiYABBADAPiIgTgTcJAAA9hIBcSLgBgEAsJ8IiBMBQQIA4AwiIE4EBAgAgHOIgDgR8CYBAHAWERAnAt4gAADOIwLi" +
+            "RMBFAgDgTCIgTgRcIAAAziUC4kTACwIA4GwiIE4EfEMAAJxPBMSJgCcEAEAOIiBOBDwgAADyEAFxIuATAQCQiwiIEwF/EAAA+YiA" +
+            "OBHwLwEAkJMIiBMBHwIAIDMRENc+AgQAQG4iIK51BAgAgPxEQFzbCBAAADWIgLiWESAAAOoQAXHtIkAAANQiAuJaRYAAAKhHBMS1" +
+            "iQABAFCTCIhrEQECAKAuERBXPgIEAEBtIiCudAQIAID6REBc2QgQAAA9iIC4khEgAAD6EAFx5SJAAAD0IgLiSkWAAADoRwTElYkA" +
+            "AQDQkwiIKxEBAgCgLxEQlz4CBABAbyIgLnUECAAAREBc2ggQAAB8fIiAO1JGgAAA4BcREJcuAgQAAH8SAXGpIkAAAPCZCIhJ9XsT" +
+            "AAA8kuoyO0C635cAAOCZdJfaJil/TwIAgO+kvNwWSvv7EQAAvJL2kpss9e9FAABwRerLboL0vw8BAMBV6S+9QUr8HgQAAO8ocfnd" +
+            "UObnFwAAvKvMJfimUj+3AAAgotRleEG5n1cAABBV7lJ8ouTPKQAAuKPk5fiHsj+fAADgrqqXZNWf6+PjQwAAMEa1y7Laz/OFAABg" +
+            "lCqXZpWf41sCAICRsl+e2T//ZQIAgNGyXqJZP3eIAABghmyXabbPe5sAAGCWLJdqls85lAAAYKbTL9fTP980AgCA2U69ZE/9XEsI" +
+            "AABWOO2yPe3zLCcAAFjllEv3lM+xlQAAYKXdl+/u///HEAAArLbrEnb5/0EAALDD6svY5f+JAABgl1WXssv/AQEAwE6zL2eX/xMC" +
+            "AIDdZl3SLv9vCAAATjD6snb5vyAAADjFqEvb5X+BAADgJHcvb5f/RQIAgNNEL3GX/xsEAAAnevcyd/m/SQAAcKqrl7rLP0AAAHCy" +
+            "V5e7yz9IAABwumeXvMv/BgEAQAafL3uXPwA08s/uDwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" +
+            "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAg/wPKaeaDtnQAzAAAAAASUVORK5CYII=";
+
+        private const string ClearIconBase64 =
+            "iVBORw0KGgoAAAANSUhEUgAAAgAAAAIACAYAAAD0eNT6AAAS7UlEQVR4nO3Y23JjRw4EQHr//59nH2a91sgSRda5NIDOjHDMow67" +
+            "G4UKPx4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" +
+            "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" +
+            "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA9fxa/QHU8J/VH0A5wgHm+vXpXzamAPCRcIC5Ps+1Od+cAsDf" +
+            "hAPM9d08m/ONKQA8HsIBJvtpjs35phQAhAPM9er8mvMNKQB7Ew4w17tza843owDsSzjAXOm8mvONKAB7Eg4w19E5NeebUAD2Ixxg" +
+            "rrPm05xvQAHYi3CAuc6eS3M+nAKwD+EAc101j+Z8MAVgD8IB5rp6Ds35UArAfMIB5rpr/sz5QArAbMIB5rp77sz5MArAXMIB5lo1" +
+            "b+Z8EAVgJuEAc62es9V/n5MoAPOsHs7Vfx8mqzJfVb6DAxSAWaoMZZXvgEmqzVW17+FNCsAc1Yax2vdAZ1Xnqep38QIFYIaqQ1j1" +
+            "u6CT6nNU/fv4hgLQX/Xhq/59UFmX+enynXygAPTWZei6fCdU0m1uun3v9hSAvroNW7fvhZW6zkvX796SAtBT1yHr+t1wp+5z0v37" +
+            "t6EA9NN9uLp/P1xpynxM+R2jKQC9TBmqKb8DzjRtLqb9nnEUgD6mDdO03wNHTJ2Hqb9rBAWgh6lDNPV3wTumz8H039eWAlDf9OGZ" +
+            "/vvgmV3e/y6/sxUFoLZdhmaX3wkf7fbud/u95SkAde02LLv9Xva263vf9XeXpADUtOuQ7Pq72cvu73z331+GAlDP7sOx++9nNu/7" +
+            "N+dQgAJQi6H4zTkwkXf9J+exmAJQh2H4k/NgEu/5a85lIQWgBkPwNefCBN7xc85nEQVgPY//OedDZ97va5zTAgrAWh79a5wTHXm3" +
+            "73FeN1MA1vHY3+O86MR7zTi3GykAa3jkGedGB95p7q/VH7ATBWANjzwnXKnM+8zJxZspAOt47DkhS0XeZU4eLqAArOXR54QtlXiP" +
+            "OTm4iAKwnsefE7pU4B3m5N9CCkANhiAnfFnJ+8vJvcUUgDoMQ04Is4J3l5N3BSgAtRiKnDDmTt5bTs4VoQDUYzhyQpk7eGc5+VaI" +
+            "AlCTIckJZ67kfeXkWjEKQF2GJSekuYJ3lZNnBSkAtRmanLDmTN5TTo4VpQDUZ3hyQpszeEc5+VWYAtCDIcoJb47wfnJyqzgFoA/D" +
+            "lBPiJLybnLxqQAHoxVDlhDnv8F5ycqoJBaAfw5UT6rzCO8nJp0YUgJ4MWU6484z3kZNLzSgAfRm2nJDnK95FTh41pAD0Zuhywp6P" +
+            "vIecHGpKAejP8OWEPo+Hd3CE/GlMAZjBEOaE/97cf07uNKcAzGEYc5bAntx7Tt4MoADMYihzlsFe3HdOzgyhAMxjOHOWwh7cc06+" +
+            "DKIAzGRIc5bDbO43J1eGUQDmMqw5S2Im95qTJwMpALMZ2pxlMYv7zMmRoRSA+QxvztKYwT3m5MdgCsAeDHHO8ujN/eXkxnAKwD4M" +
+            "c84S6cm95eTFBhSAvRjqnGXSi/vKyYlNKAD7Mdw5S6UH95STDxtRAPZkyHOWS23uJycXNqMA7Muw5yyZmtxLTh5sSAHYm6HPWTa1" +
+            "uI+cHNiUAoDhz1k6NbiHnPnfmALA4yEEjrB81nL+OXO/OQWAvwmDnCW0hnPPmXcUAP4gFHKW0b2cd86c83g8FAD+TTjkLKV7OOec" +
+            "+eb/FAC+IiRyltO1nG/OXPMHBYDvCIucJXUN55ozz/yLAsAzQiNnWZ3LeebMMV9SAPiJ8MhZWudwjjnzy7cUAF4hRHKW1zHOL2du" +
+            "eUoB4FXCJGeJZZxbzrzyIwWAdwiVnGX2HueVM6e8RAHgXcIlZ6m9xjnlzCcvUwBICJmc5fac88mZS96iAJASNjlL7mvOJWceeZsC" +
+            "wBFCJ2fZ/cl55MwhEQWAo4RPztL7zTnkzB8xBYAzCKHc7stv999/hLnjEAWAswij3K5LcNfffQbzxmEKAGcSSrndluFuv/dM5oxT" +
+            "KACcTTjldlmKu/zOK5gvTqMAcAUhlZu+HKf/viuZK06lAHAVYZWbuiSn/q47mCdOpwBwJaGVm7Ysp/2eO5kjLqEAcDXhlZuyNKf8" +
+            "jhXMD5dRALiDEMt1X57dv38lc8OlFADuIsxyXZdo1++uwLxwOQWAOwm1XLdl2u17KzEn3EIB4G7CLddlqXb5zorMB7dRAFhByOWq" +
+            "L9fq31eZueBWCgCrCLtc1SVb9bs6MA/cTgFgJaGXq7Zsq31PJ+aAJRQAVhN+uSpLt8p3dOT9s4wCQAVCMLd6+a7++5159yylAFCF" +
+            "MMytWsKWf857ZzkFgEqEYu7uZWz557xzSlAAqEY45u5aypZ/zvumDAWAioRk7urlbPnnvGtKUQCoSljmrlrSln/Oe6YcBYDKhGbu" +
+            "7GVt+ee8Y0pSAKhOeObOWtqWf877pSwFgA6EaO7o8rb8c94tpSkAdCFMc+kSt/xz3ivlKQB0IlRz7y5zyz/nndKCAkA3wjX36lK3" +
+            "/HPeJ20oAHQkZHM/LXfLP+dd0ooCQFfCNvfdkrf8c94j7SgAdCZ0c5+XveWf8w5pSQGgO+Gb+/XpX97n/dGWx8sUlhh3k5+05v8A" +
+            "MIUw5k7eG+0pAEwilLmDd8YICgDTCGeu5H0xhgLAREKaK3hXjKIAMJWw5kzeE+MoAEwmtDmDd8RICgDTCW+O8H4YSwFgB0KchHfD" +
+            "aAoAuxDmvMN7YTwFgJ0IdV7hnbAFBYDdCHee8T7YhgLAjoQ8X/Eu2IoCwK6EPR95D2xHAWBnQp/HwztgUwoAuxP+e3P/bEsBAEtg" +
+            "V+6drSkA8JtlsBf3zfYUAPiHpbAH9wwPBQA+sxxmc7/wPwoA/JslMZN7hQ8UAPiaZTGL+4RPFAD4nqUxg3uELygA8Jzl0Zv7g28o" +
+            "APAzS6Qn9wZPKADwGsukF/cFP1AA4HWWSg/uCV6gAMB7LJfa3A+8SAGA91kyNbkXeIMCABnLphb3AW9SACBn6dTgHiCgAMAxls9a" +
+            "zh9CCgAcZwmt4dzhAAUAzmEZ3ct5w0EKAJzHUrqHc4YTKABwLsvpWs4XTqIAwPksqWs4VziRAgDXsKzO5TzhZAoAXMfSOodzhAso" +
+            "AHAty+sY5wcXUQDgWr9Wf0Bzzg8uogDAdSyvczhHuIACANewtM7lPOFkCgCcz7K6hnOFEykAcC5L6lrOF06iAMB5LKd7OGc4gQIA" +
+            "57CU7uW84SAFAI6zjNZw7nCAAgDHWEJrOX8IKQCQs3xqcA8QUAAgY+nU4j7gTQoAvM+yqcm9wBsUAHiPJVOb+4EXKQDwOsulB/cE" +
+            "L1AA4DWWSi/uC36gAMDPLJOe3Bs8oQDAc5ZIb+4PvqEAwPcsjxncI3xBAYCvWRqzuE/4RAGAf7MsZnKv8IECAH+yJGZzv/A/CgD8" +
+            "w3LYg3uGhwIAf7MU9uK+2Z4CAJbBrtw7W1MA2J0lsDf3z7YUAHYm/Hk8vAM2pQCwK6HPR94D21EA2JGw5yveBVtRANiNkOcZ74Nt" +
+            "KADsRLjzCu+ELSgA7EKo8w7vhfEUAHYgzEl4N4ymADCdEOcI74exFAAmE96cwTtiJAWAqYQ2Z/KeGEcBYCJhzRW8K0ZRAJhGSHMl" +
+            "74sxFAAmEc7cwTtjBAWAKYQyd/LeaE8BYAJhnPtr9Qc05t3RmgJAd0I499enf3mf90dbCgCdCd/c56WvBOS8Q1pSAOhK6Oa+W/ZK" +
+            "QM57pB0FgI6Ebe6nJa8E5LxLWlEA6EbI5l5d7kpAzvukDQWAToRr7t2lrgTkvFNaUADoQqjm0mWuBOS8V8pTAOhAmOaOLnElIOfd" +
+            "UpoCQHVCNHfW8lYCct4vZSkAVCY8c2cvbSUg5x1TkgJAVUIzd9WyVgJy3jPlKABUJCxzVy9pJSDnXVOKAkA1QjJ313JWAnLeN2Uo" +
+            "AFQiHHN3L2UlIOedU4ICQBVCMbdqGSsBOe+d5RQAKhCGudVLePXf78y7ZykFgNWEYK7K8q3yHR15/yyjALCS8MtVW7rVvqcTc8AS" +
+            "CgCrCL1c1WVb9bs6MA/cTgFgBWGXq75kq39fZeaCWykA3E3I5bos1y7fWZH54DYKAHcSbrluS7Xb91ZiTriFAsBdhFqu6zLt+t0V" +
+            "mBcupwBwB2GW675Eu3//SuaGSykAXE2I5aYszym/YwXzw2UUAK4kvHLTlua033Mnc8QlFACuIrRyU5fl1N91B/PE6RQAriCsctOX" +
+            "5PTfdyVzxakUAM4mpHK7LMddfucVzBenUQA4k3DK7bYUd/u9ZzJnnEIB4CxCKbfrMtz1d5/BvHGYAsAZhFFu9yW4++8/wtxxiALA" +
+            "UUIoZ/n95hxy5o+YAsARwidn6f3JeeTMIREFgJTQyVl2X3MuOfPI2xQAEsImZ8k953xy5pK3KAC8S8jkLLfXOKec+eRlCgDvEC45" +
+            "S+09zitnTnmJAsCrhErOMss4t5x55UcKAK8QJjlL7BjnlzO3PKUA8BMhkrO8zuEcc+aXbykAPCM8cpbWuZxnzhzzJQWA7wiNnGV1" +
+            "DeeaM8/8iwLAV4RFzpK6lvPNmWv+oADwmZDIWU73cM45883/KQB8JBxyltK9nHfOnPN4PBQA/iEUcpbRGs49Z95RAHg8HsLgCEto" +
+            "LeefM/ebUwAQAjnLpwb3kDP/G1MA9mb4c5ZOLe4jJwc2pQDsy9DnLJua3EtOHmxIAdiTYc9ZMrW5n5xc2IwCsB9DnrNcenBPOfmw" +
+            "EQVgL4Y7Z6n04r5ycmITCsA+DHXOMunJveXkxQYUgD0Y5pwl0pv7y8mN4RSA+QxxzvKYwT3m5MdgCsBshjdnacziPnNyZCgFYC5D" +
+            "m7MsZnKvOXkykAIwk2HNWRKzud+cXBlGAZjHkOYshz2455x8GUQBmMVw5iyFvbjvnJwZQgGYw1DmLIM9ufecvBlAAZjBMOYsgb25" +
+            "/5zcaU4B6M8Q5oQ/j4d3cIT8aUwB6M3w5YQ+H3kPOTnUlALQl6HLCXu+4l3k5FFDCkBPhi0n5HnG+8jJpWYUgH4MWU648wrvJCef" +
+            "GlEAejFcOaHOO7yXnJxqQgHow1DlhDkJ7yYnrxpQAHowTDkhzhHeT05uFacA1GeIcsKbM3hHOflVmAJQm+HJCW3O5D3l5FhRCkBd" +
+            "hiYnrLmCd5WTZwUpADUZlpyQ5kreV06uFaMA1GNIcsKZO3hnOflWiAJQi+HICWXu5L3l5FwRCkAdhiInjFnBu8vJuwIUgBoMQ04I" +
+            "s5L3l5N7iykA6xmCnPClAu8wJ/8WUgDW8vhzQpdKvMecHFxEAVjHo88JWyryLnPycAEFYA2PPSdkqcz7zMnFmykAawiJjHOjA+80" +
+            "pwTcSAFYR0i8x3nRifeacW43UgDW8thf45zoyLt9j/O6mQKwnkf/nPOhM+/3Nc5pAQWgBo//a86FCbzj55zPIgpAHYbgT86DSbzn" +
+            "rzmXhRSAWgzDb86BibzrPzmPxRSAenYfit1/P7N53785hwIUgJp2HY5dfzd72f2d7/77y1AA6tptSHb7vext1/e+6+8uSQGobZdh" +
+            "2eV3wke7vfvdfm95CkB904dm+u+DZ3Z5/7v8zlYUgB6mDs/U3wXvmD4H039fWwpAH9OGaNrvgSOmzsPU3zWCAtDLlGGa8jvgTNPm" +
+            "YtrvGUcB6Kf7UHX/frjSlPmY8jtGUwB66jpcXb8b7tR9Trp//zYUgL66DVm374WVus5L1+/ekgLQW5dh6/KdUEm3uen2vdtTAPqr" +
+            "PnTVvw8q6zI/Xb6TDxSAGaoOX9Xvgk6qz1H17+MbCsAc1Yaw2vdAZ1Xnqep38QIFYJYqw1jlO2CSanNV7Xt4kwIwz+qhXP33YbIq" +
+            "81XlOzhAAZhp1XAKBbje6jlb/fc5iQIw191DKhTgPko+hykAs901rEIB7qfkc4gCMN/VQysUYB0ln5gCsIerhlcowHpKPhEFYB9n" +
+            "D7FQgDqUfN6mAOzlrGEWClCPks9bFID9HB1qoQB1Kfm8TAHYUzrcQgHqU/J5iQKwr3eHXChAH0o+P1IA9vbqsAsF6EfJ5ykFgJ+G" +
+            "XihAX0o+31IAeDy+H36hAP0p+XxJAeBvn0NAKMAcSj7wo1+rPwC4zK8P/wEAG7H8AQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" +
+            "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" +
+            "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" +
+            "AAAAgM7+C00hSJwYqkBDAAAAAElFTkSuQmCC";
+
+        /// <summary>
+        /// Construit une ImageSource à partir d'une image en base64.
+        /// (Même principe que EmbeddedEyeImage dans PasswordRevealCustom.)
+        /// </summary>
+        private static Media.ImageSource EmbeddedIcon(string base64)
+        {
+            byte[] bytes = System.Convert.FromBase64String(base64);
+            using System.IO.MemoryStream stream = new(bytes);
+            Media.Imaging.BitmapImage image = new();
+            image.BeginInit();
+            image.CacheOption = Media.Imaging.BitmapCacheOption.OnLoad;
+            image.StreamSource = stream;
+            image.EndInit();
+            image.Freeze();
+            return image;
+        }
 
         #endregion
 
@@ -4619,6 +5125,12 @@ namespace CustomObjectWPF.Model
             SetCurrentValue(MinHeightProperty, 32.0);
             SetCurrentValue(PaddingProperty, new Thickness(8, 2, 8, 2));
             SetCurrentValue(VerticalContentAlignmentProperty, VerticalAlignment.Center);
+            // Texte noir par défaut : le fond du champ est blanc par défaut,
+            // donc le texte (et le curseur, et les points du mot de passe)
+            // doit être sombre, sinon il est invisible dans une fenêtre
+            // sombre (Foreground clair hérité sur fond blanc). Un Style ou
+            // une valeur en XAML reprend le dessus normalement.
+            SetCurrentValue(ForegroundProperty, Media.Brushes.Black);
 
             Template = BuildTemplate();
             RefreshNeon(); // fallback sur le contrôle tant que le template n'est pas appliqué
@@ -4652,6 +5164,46 @@ namespace CustomObjectWPF.Model
             }
         }
 
+        private static void OnIconColorChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if (d is SearchBoxCustom box)
+            {
+                box.RefreshSearchIcon();
+            }
+        }
+
+        private static void OnClearIconColorChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if (d is SearchBoxCustom box)
+            {
+                box.RefreshClearIcon();
+            }
+        }
+
+        private void SearchImage_MouseEnter(object sender, MouseEventArgs e)
+        {
+            _isSearchIconHovered = true;
+            RefreshSearchIcon();
+        }
+
+        private void SearchImage_MouseLeave(object sender, MouseEventArgs e)
+        {
+            _isSearchIconHovered = false;
+            RefreshSearchIcon();
+        }
+
+        private void ClearButton_MouseEnter(object sender, MouseEventArgs e)
+        {
+            _isClearIconHovered = true;
+            RefreshClearIcon();
+        }
+
+        private void ClearButton_MouseLeave(object sender, MouseEventArgs e)
+        {
+            _isClearIconHovered = false;
+            RefreshClearIcon();
+        }
+
         #endregion
 
         #region Néon (lueur sur la bordure, texte net)
@@ -4677,42 +5229,73 @@ namespace CustomObjectWPF.Model
 
         #endregion
 
-        #region Icônes personnalisées
+        #region Icônes intégrées (comme les yeux)
 
         /// <summary>
-        /// Loupe dessinée ou image perso : si SearchIcon est définie, on
-        /// montre l'image et on cache la loupe en formes (et l'inverse).
+        /// Recolore une icône : les pixels opaques prennent la couleur,
+        /// l'alpha est gardé (la forme et les bords adoucis restent
+        /// identiques). Ne marche qu'avec une couleur pleine
+        /// (SolidColorBrush) ; sinon l'image d'origine est gardée.
+        /// Une image qui n'est pas un bitmap (ex. DrawingImage) est
+        /// affichée telle quelle (non teintée).
+        /// (Même principe que l'œil teinté dans PasswordRevealCustom.)
         /// </summary>
-        private void RefreshSearchIcon()
+        private static Media.ImageSource? TintedIconImage(Media.ImageSource? source, Brush? brush)
         {
-            bool custom = SearchIcon != null;
-            if (_loupeCanvas != null)
+            if (source == null) return null;
+            if (source is not Media.Imaging.BitmapSource bitmap) return source;
+            if (brush is not SolidColorBrush solid) return bitmap;
+
+            Media.Imaging.FormatConvertedBitmap converted =
+                new(bitmap, Media.PixelFormats.Bgra32, null, 0);
+            int width = converted.PixelWidth;
+            int height = converted.PixelHeight;
+            int stride = width * 4;
+            byte[] pixels = new byte[height * stride];
+            converted.CopyPixels(pixels, stride, 0);
+
+            Media.Color tint = solid.Color;
+            for (int n = 0; n < pixels.Length; n += 4)
             {
-                _loupeCanvas.Visibility = custom ? Visibility.Collapsed : Visibility.Visible;
+                if (pixels[n + 3] > 0)
+                {
+                    pixels[n] = tint.B;
+                    pixels[n + 1] = tint.G;
+                    pixels[n + 2] = tint.R;
+                }
             }
-            if (_searchImage != null)
-            {
-                _searchImage.Source = SearchIcon;
-                _searchImage.Visibility = custom ? Visibility.Visible : Visibility.Collapsed;
-            }
+
+            Media.Imaging.BitmapSource tinted = Media.Imaging.BitmapSource.Create(
+                width, height, converted.DpiX, converted.DpiY,
+                Media.PixelFormats.Bgra32, null, pixels, stride);
+            tinted.Freeze();
+            return tinted;
         }
 
         /// <summary>
-        /// X en texte ou image perso : si ClearIcon est définie, on montre
-        /// l'image et on cache le X (et l'inverse).
+        /// Loupe : l'image (intégrée par défaut, ou ton image via
+        /// SearchIcon), teintée par IconColor (noire si non définie).
+        /// </summary>
+        private void RefreshSearchIcon()
+        {
+            if (_searchImage == null) return;
+            // Au survol, IconHoverColor gagne sur IconColor (comme EyeHoverColor).
+            Brush? couleur = _isSearchIconHovered && IconHoverColor != null ? IconHoverColor : IconColor;
+            _searchImage.Source = TintedIconImage(SearchIcon, couleur);
+            _searchImage.Visibility = SearchIcon == null ? Visibility.Collapsed : Visibility.Visible;
+        }
+
+        /// <summary>
+        /// X : l'image (intégrée par défaut, ou ton image via ClearIcon),
+        /// teintée par ClearIconColor (noire si non définie).
         /// </summary>
         private void RefreshClearIcon()
         {
-            bool custom = ClearIcon != null;
-            if (_clearText != null)
-            {
-                _clearText.Visibility = custom ? Visibility.Collapsed : Visibility.Visible;
-            }
-            if (_clearImage != null)
-            {
-                _clearImage.Source = ClearIcon;
-                _clearImage.Visibility = custom ? Visibility.Visible : Visibility.Collapsed;
-            }
+            if (_clearImage == null) return;
+            // Au survol, ClearIconHoverColor gagne sur ClearIconColor.
+            Brush? couleur = _isClearIconHovered && ClearIconHoverColor != null ? ClearIconHoverColor : ClearIconColor;
+            _clearImage.Source = TintedIconImage(ClearIcon, couleur);
+            _clearImage.Visibility = ClearIcon == null ? Visibility.Collapsed : Visibility.Visible;
         }
 
         #endregion
@@ -4731,21 +5314,44 @@ namespace CustomObjectWPF.Model
             remove => RemoveHandler(SearchEvent, value);
         }
 
+        /// <summary>
+        /// Événement levé quand on clique sur la loupe (à gauche).
+        /// Sa propre action, séparée de Search (Entrée) : l'utilisateur
+        /// y attache ce qu'il veut (ex. : lancer la recherche).
+        /// </summary>
+        public static readonly RoutedEvent SearchIconClickedEvent = EventManager.RegisterRoutedEvent(
+            nameof(SearchIconClicked), RoutingStrategy.Bubble, typeof(RoutedEventHandler), typeof(SearchBoxCustom));
+
+        public event RoutedEventHandler SearchIconClicked
+        {
+            add => AddHandler(SearchIconClickedEvent, value);
+            remove => RemoveHandler(SearchIconClickedEvent, value);
+        }
+
         public override void OnApplyTemplate()
         {
             base.OnApplyTemplate();
 
             // On se désabonne d'abord (sécurité si le template est réappliqué).
             if (_clearButton != null) _clearButton.Click -= ClearButton_Click;
+            if (_searchImage != null) { _searchImage.MouseEnter -= SearchImage_MouseEnter; _searchImage.MouseLeave -= SearchImage_MouseLeave; }
+            if (_searchImage != null) _searchImage.MouseLeftButtonUp -= SearchImage_MouseLeftButtonUp;
+            if (_clearButton != null) { _clearButton.MouseEnter -= ClearButton_MouseEnter; _clearButton.MouseLeave -= ClearButton_MouseLeave; }
 
             _clearButton = Template.FindName("clearButton", this) as Controls.Button;
             _glowBorder = Template.FindName("glowBorder", this) as Border;
-            _loupeCanvas = Template.FindName("loupeCanvas", this) as Controls.Canvas;
             _searchImage = Template.FindName("searchImage", this) as Controls.Image;
-            _clearText = Template.FindName("clearText", this) as Controls.TextBlock;
             _clearImage = Template.FindName("clearImage", this) as Controls.Image;
 
             if (_clearButton != null) _clearButton.Click += ClearButton_Click;
+            if (_searchImage != null) { _searchImage.MouseEnter += SearchImage_MouseEnter; _searchImage.MouseLeave += SearchImage_MouseLeave; }
+            if (_searchImage != null)
+            {
+                _searchImage.MouseLeftButtonUp += SearchImage_MouseLeftButtonUp;
+                // La loupe est cliquable : on le montre avec la main.
+                _searchImage.Cursor = System.Windows.Input.Cursors.Hand;
+            }
+            if (_clearButton != null) { _clearButton.MouseEnter += ClearButton_MouseEnter; _clearButton.MouseLeave += ClearButton_MouseLeave; }
 
             RefreshSearchIcon();
             RefreshClearIcon();
@@ -4755,6 +5361,14 @@ namespace CustomObjectWPF.Model
         private void ClearButton_Click(object sender, RoutedEventArgs e)
         {
             Text = string.Empty;
+            Focus();
+        }
+
+        // Clic sur la loupe : l'utilisateur y attache sa propre action
+        // (ex. : lancer la recherche), comme un Click de bouton.
+        private void SearchImage_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            RaiseEvent(new RoutedEventArgs(SearchIconClickedEvent, this));
             Focus();
         }
 
@@ -4836,41 +5450,18 @@ namespace CustomObjectWPF.Model
             grid.AppendChild(colText);
             grid.AppendChild(colClear);
 
-            // Loupe : un cercle + une poignée, dessinés en formes (pas
-            // d'image) — nets à toutes les tailles, teintables.
-            // Couleur : IconColor, ou Foreground si non définie.
-            FrameworkElementFactory loupe = new(typeof(Controls.Canvas));
-            loupe.Name = "loupeCanvas";
-            loupe.SetValue(Controls.Grid.ColumnProperty, 0);
-            loupe.SetValue(FrameworkElement.WidthProperty, 16.0);
-            loupe.SetValue(FrameworkElement.HeightProperty, 16.0);
-            loupe.SetValue(FrameworkElement.VerticalAlignmentProperty, VerticalAlignment.Center);
-            loupe.SetValue(FrameworkElement.MarginProperty, new Thickness(2, 0, 6, 0));
-
-            FrameworkElementFactory circle = new(typeof(WPF.Shapes.Ellipse));
-            circle.SetValue(FrameworkElement.WidthProperty, 10.0);
-            circle.SetValue(FrameworkElement.HeightProperty, 10.0);
-            circle.SetValue(Controls.Canvas.LeftProperty, 1.0);
-            circle.SetValue(Controls.Canvas.TopProperty, 1.0);
-            circle.SetValue(WPF.Shapes.Shape.StrokeThicknessProperty, 2.0);
-            MultiBinding circleBinding = new() { Converter = new FirstNonNullBrushConverter() };
-            circleBinding.Bindings.Add(new WPF.Data.Binding(nameof(IconColor)) { RelativeSource = templatedParent });
-            circleBinding.Bindings.Add(new WPF.Data.Binding(nameof(Foreground)) { RelativeSource = templatedParent });
-            circle.SetBinding(WPF.Shapes.Shape.StrokeProperty, circleBinding);
-
-            FrameworkElementFactory handle = new(typeof(WPF.Shapes.Line));
-            handle.SetValue(WPF.Shapes.Line.X1Property, 8.5);
-            handle.SetValue(WPF.Shapes.Line.Y1Property, 8.5);
-            handle.SetValue(WPF.Shapes.Line.X2Property, 14.0);
-            handle.SetValue(WPF.Shapes.Line.Y2Property, 14.0);
-            handle.SetValue(WPF.Shapes.Shape.StrokeThicknessProperty, 2.0);
-            MultiBinding handleBinding = new() { Converter = new FirstNonNullBrushConverter() };
-            handleBinding.Bindings.Add(new WPF.Data.Binding(nameof(IconColor)) { RelativeSource = templatedParent });
-            handleBinding.Bindings.Add(new WPF.Data.Binding(nameof(Foreground)) { RelativeSource = templatedParent });
-            handle.SetBinding(WPF.Shapes.Shape.StrokeProperty, handleBinding);
-
-            loupe.AppendChild(circle);
-            loupe.AppendChild(handle);
+            // Loupe : l'image intégrée en base64 (noire, 512x512, teintée
+            // en code par IconColor — voir RefreshSearchIcon). Rendu net :
+            // HighQuality, comme l'œil.
+            FrameworkElementFactory searchImage = new(typeof(Controls.Image));
+            searchImage.Name = "searchImage";
+            searchImage.SetValue(Controls.Grid.ColumnProperty, 0);
+            searchImage.SetValue(FrameworkElement.WidthProperty, 16.0);
+            searchImage.SetValue(FrameworkElement.HeightProperty, 16.0);
+            searchImage.SetValue(FrameworkElement.VerticalAlignmentProperty, VerticalAlignment.Center);
+            searchImage.SetValue(FrameworkElement.MarginProperty, new Thickness(2, 0, 6, 0));
+            searchImage.SetValue(Controls.Image.StretchProperty, Stretch.Uniform);
+            searchImage.SetValue(RenderOptions.BitmapScalingModeProperty, BitmapScalingMode.HighQuality);
 
             // Texte d'aide : visible seulement quand le champ est vide
             // (trigger sur Text = ""). Ne capte pas les clics : on peut
@@ -4881,6 +5472,9 @@ namespace CustomObjectWPF.Model
             watermark.SetValue(FrameworkElement.VerticalAlignmentProperty, VerticalAlignment.Center);
             watermark.SetValue(UIElement.IsHitTestVisibleProperty, false);
             watermark.SetValue(UIElement.VisibilityProperty, Visibility.Collapsed);
+            // Toujours un peu transparente (0,6), comme un vrai placeholder :
+            // la couleur se choisit avec WatermarkColor, la transparence est fixe.
+            watermark.SetValue(UIElement.OpacityProperty, 0.6);
             watermark.SetBinding(
                 Controls.TextBlock.TextProperty,
                 new WPF.Data.Binding(nameof(Watermark)) { RelativeSource = templatedParent });
@@ -4905,25 +5499,9 @@ namespace CustomObjectWPF.Model
             clearButton.SetValue(FrameworkElement.FocusableProperty, false);
             clearButton.SetValue(FrameworkElement.WidthProperty, 28.0);
             clearButton.SetValue(Controls.Control.TemplateProperty, BuildClearButtonTemplate());
-            // Contenu du bouton : une grille avec le X en texte ET une
-            // image perso superposés (une seule des deux est visible :
-            // c'est RefreshClearIcon qui choisit selon ClearIcon).
-            FrameworkElementFactory clearContent = new(typeof(Controls.Grid));
-
-            FrameworkElementFactory clearText = new(typeof(Controls.TextBlock));
-            clearText.Name = "clearText";
-            clearText.SetValue(Controls.TextBlock.TextProperty, "×");
-            clearText.SetValue(Controls.TextBlock.FontSizeProperty, 14.0);
-            clearText.SetValue(FrameworkElement.HorizontalAlignmentProperty, WPF.HorizontalAlignment.Center);
-            clearText.SetValue(FrameworkElement.VerticalAlignmentProperty, VerticalAlignment.Center);
-            MultiBinding clearBinding = new() { Converter = new FirstNonNullBrushConverter() };
-            clearBinding.Bindings.Add(new WPF.Data.Binding(nameof(ClearIconColor)) { RelativeSource = templatedParent });
-            clearBinding.Bindings.Add(new WPF.Data.Binding(nameof(IconColor)) { RelativeSource = templatedParent });
-            clearBinding.Bindings.Add(new WPF.Data.Binding(nameof(Foreground)) { RelativeSource = templatedParent });
-            clearText.SetBinding(
-                Controls.TextBlock.ForegroundProperty,
-                clearBinding);
-
+            // Contenu du bouton : l'image du X intégrée en base64 (noire,
+            // 512x512, teintée en code par ClearIconColor — voir
+            // RefreshClearIcon). Rendu net : HighQuality, comme l'œil.
             FrameworkElementFactory clearImage = new(typeof(Controls.Image));
             clearImage.Name = "clearImage";
             clearImage.SetValue(FrameworkElement.WidthProperty, 14.0);
@@ -4931,25 +5509,9 @@ namespace CustomObjectWPF.Model
             clearImage.SetValue(FrameworkElement.HorizontalAlignmentProperty, WPF.HorizontalAlignment.Center);
             clearImage.SetValue(FrameworkElement.VerticalAlignmentProperty, VerticalAlignment.Center);
             clearImage.SetValue(Controls.Image.StretchProperty, Stretch.Uniform);
-            clearImage.SetValue(UIElement.VisibilityProperty, Visibility.Collapsed);
+            clearImage.SetValue(RenderOptions.BitmapScalingModeProperty, BitmapScalingMode.HighQuality);
+            clearButton.AppendChild(clearImage);
 
-            clearContent.AppendChild(clearText);
-            clearContent.AppendChild(clearImage);
-            clearButton.AppendChild(clearContent);
-
-            // Image perso à la place de la loupe (cachée par défaut :
-            // c'est RefreshSearchIcon qui la montre si SearchIcon est définie).
-            FrameworkElementFactory searchImage = new(typeof(Controls.Image));
-            searchImage.Name = "searchImage";
-            searchImage.SetValue(Controls.Grid.ColumnProperty, 0);
-            searchImage.SetValue(FrameworkElement.WidthProperty, 16.0);
-            searchImage.SetValue(FrameworkElement.HeightProperty, 16.0);
-            searchImage.SetValue(FrameworkElement.VerticalAlignmentProperty, VerticalAlignment.Center);
-            searchImage.SetValue(FrameworkElement.MarginProperty, new Thickness(2, 0, 6, 0));
-            searchImage.SetValue(Controls.Image.StretchProperty, Stretch.Uniform);
-            searchImage.SetValue(UIElement.VisibilityProperty, Visibility.Collapsed);
-
-            grid.AppendChild(loupe);
             grid.AppendChild(searchImage);
             grid.AppendChild(watermark);
             grid.AppendChild(scroll);
@@ -5043,7 +5605,7 @@ namespace CustomObjectWPF.Model
             Controls.ControlTemplate template = new(typeof(Controls.Button));
             template.VisualTree = border;
 
-            // Survol : léger voile blanc (visible sur fond sombre, discret sur fond clair).
+            // Survol : léger voile gris (visible sur fond clair : le champ est blanc par défaut).
             Trigger hoverTrigger = new()
             {
                 Property = UIElement.IsMouseOverProperty,
@@ -5053,7 +5615,7 @@ namespace CustomObjectWPF.Model
             {
                 Property = Controls.Border.BackgroundProperty,
                 TargetName = "clearButtonBorder",
-                Value = new SolidColorBrush(Color.FromArgb(0x1F, 0xFF, 0xFF, 0xFF))
+                Value = new SolidColorBrush(Color.FromArgb(0x1F, 0x00, 0x00, 0x00))
             });
             template.Triggers.Add(hoverTrigger);
 
@@ -5118,6 +5680,24 @@ namespace CustomObjectWPF.Model
                 typeof(double),
                 typeof(NumericUpDownCustom),
                 new PropertyMetadata(1.0));
+
+        /// <summary>
+        /// Format d'affichage de la valeur (ex. : "0.00" pour 2 décimales,
+        /// "C2" pour un prix, "0' %'" pour un pourcentage). Null = nombre brut.
+        /// C'est de l'affichage seulement : quand on tape, on tape le nombre
+        /// brut (ex. : 9,99, pas 9,99 €).
+        /// </summary>
+        public static readonly DependencyProperty FormatProperty =
+            DependencyProperty.Register(
+                nameof(Format),
+                typeof(string),
+                typeof(NumericUpDownCustom),
+                new PropertyMetadata(null, OnFormatChanged));
+
+        private static void OnFormatChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if (d is NumericUpDownCustom control) control.SyncTextFromValue();
+        }
 
         /// <summary>
         /// Coins arrondis du champ. 0 = rectangle vif.
@@ -5188,6 +5768,12 @@ namespace CustomObjectWPF.Model
             set => SetValue(IncrementProperty, value);
         }
 
+        public string? Format
+        {
+            get => (string?)GetValue(FormatProperty);
+            set => SetValue(FormatProperty, value);
+        }
+
         public CornerRadius CornerRadius
         {
             get => (CornerRadius)GetValue(CornerRadiusProperty);
@@ -5246,6 +5832,12 @@ namespace CustomObjectWPF.Model
             SetCurrentValue(MinHeightProperty, 32.0);
             SetCurrentValue(PaddingProperty, new Thickness(8, 2, 8, 2));
             SetCurrentValue(VerticalContentAlignmentProperty, VerticalAlignment.Center);
+            // Texte noir par défaut : le fond du champ est blanc par défaut,
+            // donc le texte (et le curseur, et les points du mot de passe)
+            // doit être sombre, sinon il est invisible dans une fenêtre
+            // sombre (Foreground clair hérité sur fond blanc). Un Style ou
+            // une valeur en XAML reprend le dessus normalement.
+            SetCurrentValue(ForegroundProperty, Media.Brushes.Black);
 
             Template = BuildTemplate();
             RefreshNeon(); // fallback sur le contrôle tant que le template n'est pas appliqué
@@ -5303,7 +5895,9 @@ namespace CustomObjectWPF.Model
         private void SyncTextFromValue()
         {
             if (_valueBox == null) return;
-            _valueBox.Text = Value.ToString(CultureInfo.CurrentCulture);
+            _valueBox.Text = Format != null
+                ? Value.ToString(Format, CultureInfo.CurrentCulture)
+                : Value.ToString(CultureInfo.CurrentCulture);
         }
 
         /// <summary>
@@ -5651,7 +6245,7 @@ namespace CustomObjectWPF.Model
             Controls.ControlTemplate template = new(typeof(RepeatButton));
             template.VisualTree = border;
 
-            // Survol : léger voile blanc (visible sur fond sombre, discret sur fond clair).
+            // Survol : léger voile gris (visible sur fond clair : le champ est blanc par défaut).
             Trigger hoverTrigger = new()
             {
                 Property = UIElement.IsMouseOverProperty,
@@ -5661,7 +6255,7 @@ namespace CustomObjectWPF.Model
             {
                 Property = Controls.Border.BackgroundProperty,
                 TargetName = "stepButtonBorder",
-                Value = new SolidColorBrush(Color.FromArgb(0x1F, 0xFF, 0xFF, 0xFF))
+                Value = new SolidColorBrush(Color.FromArgb(0x1F, 0x00, 0x00, 0x00))
             });
             template.Triggers.Add(hoverTrigger);
 
@@ -5707,6 +6301,41 @@ namespace CustomObjectWPF.Model
                 typeof(object),
                 typeof(ComboBoxCustom),
                 new PropertyMetadata(null, OnSelectedItemChanged));
+
+        /// <summary>
+        /// Couleur de fond de l'élément choisi dans la liste déroulante.
+        /// Défaut : cyan (comme ListBoxCustom), lisible sur fond blanc.
+        /// </summary>
+        public static readonly DependencyProperty SelectedItemBackgroundProperty =
+            DependencyProperty.Register(
+                nameof(SelectedItemBackground),
+                typeof(Brush),
+                typeof(ComboBoxCustom),
+                new PropertyMetadata(new SolidColorBrush(
+                    (Color)ColorConverter.ConvertFromString("#FF00D1FF"))));
+
+        /// <summary>
+        /// Couleur du texte de l'élément choisi dans la liste déroulante.
+        /// Défaut : noir (lisible sur le fond cyan).
+        /// </summary>
+        public static readonly DependencyProperty SelectedItemForegroundProperty =
+            DependencyProperty.Register(
+                nameof(SelectedItemForeground),
+                typeof(Brush),
+                typeof(ComboBoxCustom),
+                new PropertyMetadata(Media.Brushes.Black));
+
+        /// <summary>
+        /// Couleur de la bordure de l'élément choisi dans la liste déroulante.
+        /// Défaut : cyan (comme ListBoxCustom).
+        /// </summary>
+        public static readonly DependencyProperty SelectedItemBorderBrushProperty =
+            DependencyProperty.Register(
+                nameof(SelectedItemBorderBrush),
+                typeof(Brush),
+                typeof(ComboBoxCustom),
+                new PropertyMetadata(new SolidColorBrush(
+                    (Color)ColorConverter.ConvertFromString("#FF00D1FF"))));
 
         /// <summary>
         /// Nom de la propriété à afficher pour chaque élément
@@ -5818,6 +6447,24 @@ namespace CustomObjectWPF.Model
             set => SetValue(SelectedItemProperty, value);
         }
 
+        public Brush SelectedItemBackground
+        {
+            get => (Brush)GetValue(SelectedItemBackgroundProperty);
+            set => SetValue(SelectedItemBackgroundProperty, value);
+        }
+
+        public Brush SelectedItemForeground
+        {
+            get => (Brush)GetValue(SelectedItemForegroundProperty);
+            set => SetValue(SelectedItemForegroundProperty, value);
+        }
+
+        public Brush SelectedItemBorderBrush
+        {
+            get => (Brush)GetValue(SelectedItemBorderBrushProperty);
+            set => SetValue(SelectedItemBorderBrushProperty, value);
+        }
+
         public string DisplayMemberPath
         {
             get => (string)GetValue(DisplayMemberPathProperty);
@@ -5890,6 +6537,9 @@ namespace CustomObjectWPF.Model
         // Bordure du champ, pour la lueur néon (voir RefreshNeon).
         private Border? _glowBorder;
 
+        // Dernière position du contrôle à l'écran (pour faire suivre la liste).
+        private Point _dernierePosition;
+
         #endregion
 
         #region Constructeur
@@ -5907,6 +6557,12 @@ namespace CustomObjectWPF.Model
             SetCurrentValue(MinHeightProperty, 32.0);
             SetCurrentValue(PaddingProperty, new Thickness(8, 2, 8, 2));
             SetCurrentValue(VerticalContentAlignmentProperty, VerticalAlignment.Center);
+            // Texte noir par défaut : le fond du champ est blanc par défaut,
+            // donc le texte (et le curseur, et les points du mot de passe)
+            // doit être sombre, sinon il est invisible dans une fenêtre
+            // sombre (Foreground clair hérité sur fond blanc). Un Style ou
+            // une valeur en XAML reprend le dessus normalement.
+            SetCurrentValue(ForegroundProperty, Media.Brushes.Black);
 
             Template = BuildTemplate();
             RefreshNeon(); // fallback sur le contrôle tant que le template n'est pas appliqué
@@ -6015,6 +6671,7 @@ namespace CustomObjectWPF.Model
             // On se désabonne d'abord (sécurité si le template est réappliqué).
             if (_fieldButton != null) _fieldButton.Click -= FieldButton_Click;
             if (_popup != null) _popup.Opened -= Popup_Opened;
+            if (_popup != null) _popup.Closed -= Popup_Closed;
             if (_listBox != null)
             {
                 _listBox.PreviewMouseLeftButtonUp -= ListBox_PreviewMouseLeftButtonUp;
@@ -6032,11 +6689,16 @@ namespace CustomObjectWPF.Model
             {
                 _popup.PlacementTarget = this;
                 _popup.Opened += Popup_Opened;
+                _popup.Closed += Popup_Closed;
             }
             if (_listBox != null)
             {
                 _listBox.PreviewMouseLeftButtonUp += ListBox_PreviewMouseLeftButtonUp;
                 _listBox.KeyDown += ListBox_KeyDown;
+                // Style des lignes : couleurs de sélection lisibles (voir
+                // BuildDropDownItemStyle) — posé ici, pas dans le template,
+                // parce que les bindings ont besoin de ce ComboBox-ci.
+                _listBox.ItemContainerStyle = BuildDropDownItemStyle();
             }
 
             RefreshDisplayText();
@@ -6053,6 +6715,144 @@ namespace CustomObjectWPF.Model
         private void Popup_Opened(object? sender, EventArgs e)
         {
             _listBox?.Focus();
+
+            // La liste doit suivre le champ quand on défile (un Popup ne le
+            // fait pas tout seul : c'est une fenêtre à part). On surveille
+            // la position tant que la liste est ouverte.
+            _dernierePosition = PointToScreen(new Point(0, 0));
+            LayoutUpdated += SuivreCible;
+        }
+
+        private void Popup_Closed(object? sender, EventArgs e)
+        {
+            LayoutUpdated -= SuivreCible;
+        }
+
+        private void SuivreCible(object? sender, EventArgs e)
+        {
+            if (_popup == null || !_popup.IsOpen) return;
+
+            Point position = PointToScreen(new Point(0, 0));
+            if (position != _dernierePosition)
+            {
+                _dernierePosition = position;
+                // Force le Popup à se repositionner sous son champ : on
+                // bouge le décalage de 1 px puis on le remet (sans clignotement).
+                double decalage = _popup.HorizontalOffset;
+                _popup.HorizontalOffset = decalage + 1;
+                _popup.HorizontalOffset = decalage;
+            }
+        }
+
+        // Style des lignes de la liste déroulante : même principe que
+        // ListBoxCustom (Border + ContentPresenter + trigger de sélection),
+        // mais les couleurs viennent de CE ComboBox-ci (Source = this) :
+        // la liste est dans un Popup, un FindAncestor ne traverserait pas
+        // sa frontière, et les couleurs par défaut de WPF (bleu clair du
+        // système) ne sont pas lisibles sur fond blanc.
+        private Style BuildDropDownItemStyle()
+        {
+            WPF.Data.RelativeSource templatedParent =
+                new(WPF.Data.RelativeSourceMode.TemplatedParent);
+
+            Style style = new(typeof(Controls.ListBoxItem));
+            style.Setters.Add(new Setter(Controls.ListBoxItem.BackgroundProperty,
+                Media.Brushes.Transparent));
+            style.Setters.Add(new Setter(Controls.ListBoxItem.BorderThicknessProperty,
+                new Thickness(1)));
+            style.Setters.Add(new Setter(Controls.ListBoxItem.PaddingProperty,
+                new Thickness(8, 6, 8, 6)));
+            style.Setters.Add(new Setter(Controls.ListBoxItem.MarginProperty,
+                new Thickness(0, 0, 0, 4)));
+            style.Setters.Add(new Setter(Controls.ListBoxItem.HorizontalContentAlignmentProperty,
+                WPF.HorizontalAlignment.Stretch));
+
+            Controls.ControlTemplate itemTemplate = new(typeof(Controls.ListBoxItem));
+
+            FrameworkElementFactory itemBorder = new(typeof(Controls.Border));
+            itemBorder.Name = "itemBorder";
+            itemBorder.SetBinding(
+                Controls.Border.BackgroundProperty,
+                new WPF.Data.Binding(nameof(Background)) { RelativeSource = templatedParent });
+            itemBorder.SetBinding(
+                Controls.Border.BorderBrushProperty,
+                new WPF.Data.Binding(nameof(BorderBrush)) { RelativeSource = templatedParent });
+            itemBorder.SetBinding(
+                Controls.Border.BorderThicknessProperty,
+                new WPF.Data.Binding(nameof(BorderThickness)) { RelativeSource = templatedParent });
+            // Les lignes suivent le CornerRadius du ComboBox (comme le cadre
+            // de la liste) : fini le rectangle dans le rectangle.
+            itemBorder.SetBinding(
+                Controls.Border.CornerRadiusProperty,
+                new WPF.Data.Binding(nameof(CornerRadius)) { Source = this });
+            itemBorder.SetBinding(
+                Controls.Border.PaddingProperty,
+                new WPF.Data.Binding(nameof(Padding)) { RelativeSource = templatedParent });
+
+            FrameworkElementFactory presenter = new(typeof(Controls.ContentPresenter));
+            presenter.SetBinding(
+                Controls.ContentPresenter.ContentProperty,
+                new WPF.Data.Binding("Content") { RelativeSource = templatedParent });
+            presenter.SetBinding(
+                Controls.ContentPresenter.ContentTemplateProperty,
+                new WPF.Data.Binding("ContentTemplate") { RelativeSource = templatedParent });
+            presenter.SetBinding(
+                Controls.ContentPresenter.ContentTemplateSelectorProperty,
+                new WPF.Data.Binding("ContentTemplateSelector") { RelativeSource = templatedParent });
+            presenter.SetBinding(
+                Controls.ContentPresenter.HorizontalAlignmentProperty,
+                new WPF.Data.Binding(nameof(HorizontalContentAlignment)) { RelativeSource = templatedParent });
+            presenter.SetValue(
+                Controls.ContentPresenter.VerticalAlignmentProperty,
+                VerticalAlignment.Center);
+
+            itemBorder.AppendChild(presenter);
+            itemTemplate.VisualTree = itemBorder;
+
+            // Sélectionné : fond + bordure + texte pilotés par les 3
+            // propriétés du ComboBox (cyan + texte noir par défaut).
+            Trigger selectedTrigger = new()
+            {
+                Property = Controls.ListBoxItem.IsSelectedProperty,
+                Value = true
+            };
+            selectedTrigger.Setters.Add(new Setter
+            {
+                Property = Controls.Border.BackgroundProperty,
+                TargetName = "itemBorder",
+                Value = new WPF.Data.Binding(nameof(SelectedItemBackground)) { Source = this }
+            });
+            selectedTrigger.Setters.Add(new Setter
+            {
+                Property = Controls.Border.BorderBrushProperty,
+                TargetName = "itemBorder",
+                Value = new WPF.Data.Binding(nameof(SelectedItemBorderBrush)) { Source = this }
+            });
+            selectedTrigger.Setters.Add(new Setter
+            {
+                Property = Controls.Control.ForegroundProperty,
+                Value = new WPF.Data.Binding(nameof(SelectedItemForeground)) { Source = this }
+            });
+            itemTemplate.Triggers.Add(selectedTrigger);
+
+            // Survolé : fond bleu très clair, texte inchangé (noir par défaut) : lisible.
+            Trigger hoverTrigger = new()
+            {
+                Property = UIElement.IsMouseOverProperty,
+                Value = true
+            };
+            hoverTrigger.Setters.Add(new Setter
+            {
+                Property = Controls.Border.BackgroundProperty,
+                TargetName = "itemBorder",
+                Value = new SolidColorBrush(
+                    (Color)ColorConverter.ConvertFromString("#FFE5F1FB"))
+            });
+            itemTemplate.Triggers.Add(hoverTrigger);
+
+            style.Setters.Add(new Setter(Controls.Control.TemplateProperty, itemTemplate));
+
+            return style;
         }
 
         // Clic dans la liste : si c'est sur un élément, on ferme (la
@@ -6228,6 +7028,9 @@ namespace CustomObjectWPF.Model
             FrameworkElementFactory listBox = new(typeof(Controls.ListBox));
             listBox.Name = "listBox";
             listBox.SetValue(Controls.Control.BackgroundProperty, Media.Brushes.Transparent);
+            listBox.SetBinding(
+                Controls.Control.ForegroundProperty,
+                new WPF.Data.Binding(nameof(Foreground)) { RelativeSource = templatedParent });
             listBox.SetValue(Controls.Control.BorderThicknessProperty, new Thickness(0));
             listBox.SetBinding(
                 Controls.ItemsControl.ItemsSourceProperty,
@@ -6335,7 +7138,7 @@ namespace CustomObjectWPF.Model
             Controls.ControlTemplate template = new(typeof(Controls.Button));
             template.VisualTree = border;
 
-            // Survol : léger voile blanc (visible sur fond sombre, discret sur fond clair).
+            // Survol : léger voile gris (visible sur fond clair : le champ est blanc par défaut).
             Trigger hoverTrigger = new()
             {
                 Property = UIElement.IsMouseOverProperty,
@@ -6345,7 +7148,7 @@ namespace CustomObjectWPF.Model
             {
                 Property = Controls.Border.BackgroundProperty,
                 TargetName = "fieldButtonBorder",
-                Value = new SolidColorBrush(Color.FromArgb(0x1F, 0xFF, 0xFF, 0xFF))
+                Value = new SolidColorBrush(Color.FromArgb(0x1F, 0x00, 0x00, 0x00))
             });
             template.Triggers.Add(hoverTrigger);
 
