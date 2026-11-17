@@ -1,6 +1,6 @@
 // ============================================================================
 // CustomObjectWPF — contrôles personnalisés (WPF)
-// VERSION : 15
+// VERSION : 16
 // RÈGLE : incrémenter VERSION de 1 à CHAQUE modification du fichier
 // (même une petite), et ajouter une ligne dans l'historique ci-dessous.
 // Ça permet de savoir quelle version du fichier on a sous les yeux.
@@ -52,6 +52,11 @@
 //        loupe de la recherche (événement SearchIconClicked, sa propre
 //        action) + Format d'affichage du nombre (décimales, prix, %)
 //        + graisse du titre des cartes (TitleFontWeight).
+//   v16 — Le survol ne cache plus la sélection (ListBox + liste du
+//        ComboBox) : quand on survole un élément choisi, c'est son fond
+//        (et son texte) qui restent. Watermark aligné avec le curseur
+//        (décalé d'un Padding vers la droite). Texte du champ du
+//        ComboBox lié au Foreground (noir par défaut).
 // ============================================================================
 using System.Globalization;
 using System.Windows;
@@ -2290,8 +2295,6 @@ namespace CustomObjectWPF.Model
                 Property = Controls.Control.ForegroundProperty,
                 Value = AncestorBinding(nameof(SelectedItemForeground))
             });
-            itemTemplate.Triggers.Add(selectedTrigger);
-
             // Survolé : fond bleu très clair, texte inchangé (noir par défaut) : lisible.
             Trigger hoverTrigger = new()
             {
@@ -2306,6 +2309,11 @@ namespace CustomObjectWPF.Model
                     (Color)ColorConverter.ConvertFromString("#FFE5F1FB"))
             });
             itemTemplate.Triggers.Add(hoverTrigger);
+
+            // La sélection gagne sur le survol : quand on survole un élément
+            // choisi, c'est son fond (et son texte) qui restent — sinon un
+            // texte blanc deviendrait illisible sur le fond clair du survol.
+            itemTemplate.Triggers.Add(selectedTrigger);
 
             style.Setters.Add(new Setter(Controls.Control.TemplateProperty, itemTemplate));
 
@@ -2579,6 +2587,19 @@ namespace CustomObjectWPF.Model
             watermark.SetBinding(
                 Controls.TextBlock.FontSizeProperty,
                 new WPF.Data.Binding(nameof(FontSize)) { RelativeSource = templatedParent });
+            // Aligné avec le curseur : le texte est décalé d'un Padding vers
+            // la droite (le champ applique son Padding deux fois : une fois
+            // par la marge du modèle, une fois en interne), alors que le
+            // watermark n'en a qu'un. On lui ajoute donc un Padding à gauche
+            // égal au Padding du champ, sinon le curseur tombe au milieu de
+            // la première lettre du texte d'aide.
+            watermark.SetBinding(
+                Controls.TextBlock.PaddingProperty,
+                new WPF.Data.Binding("Padding.Left")
+                {
+                    RelativeSource = templatedParent,
+                    Converter = new DoubleToLeftMarginConverter()
+                });
 
             // Le watermark est DERRIÈRE le texte : le curseur (peint par le
             // ScrollViewer) reste visible, juste devant la première lettre.
@@ -3091,6 +3112,19 @@ namespace CustomObjectWPF.Model
             watermark.SetBinding(
                 Controls.TextBlock.FontSizeProperty,
                 new WPF.Data.Binding(nameof(FontSize)) { RelativeSource = templatedParent });
+            // Aligné avec le curseur : le texte est décalé d'un Padding vers
+            // la droite (le champ applique son Padding deux fois : une fois
+            // par la marge du modèle, une fois en interne), alors que le
+            // watermark n'en a qu'un. On lui ajoute donc un Padding à gauche
+            // égal au Padding du champ, sinon le curseur tombe au milieu de
+            // la première lettre du texte d'aide.
+            watermark.SetBinding(
+                Controls.TextBlock.PaddingProperty,
+                new WPF.Data.Binding("Padding.Left")
+                {
+                    RelativeSource = templatedParent,
+                    Converter = new DoubleToLeftMarginConverter()
+                });
 
             // Le watermark est DERRIÈRE le champ : les points du mot de passe
             // et le curseur peignent par-dessus, toujours visibles.
@@ -4567,6 +4601,19 @@ namespace CustomObjectWPF.Model
             watermark.SetBinding(
                 Controls.TextBlock.FontSizeProperty,
                 new WPF.Data.Binding(nameof(FontSize)) { RelativeSource = templatedParent });
+            // Aligné avec le curseur : le texte est décalé d'un Padding vers
+            // la droite (le champ applique son Padding deux fois : une fois
+            // par la marge du modèle, une fois en interne), alors que le
+            // watermark n'en a qu'un. On lui ajoute donc un Padding à gauche
+            // égal au Padding du champ, sinon le curseur tombe au milieu de
+            // la première lettre du texte d'aide.
+            watermark.SetBinding(
+                Controls.TextBlock.PaddingProperty,
+                new WPF.Data.Binding("Padding.Left")
+                {
+                    RelativeSource = templatedParent,
+                    Converter = new DoubleToLeftMarginConverter()
+                });
 
             // Le watermark est DERRIÈRE les deux champs : les points / le
             // texte et le curseur peignent par-dessus, toujours visibles.
@@ -5484,6 +5531,19 @@ namespace CustomObjectWPF.Model
             watermark.SetBinding(
                 Controls.TextBlock.FontSizeProperty,
                 new WPF.Data.Binding(nameof(FontSize)) { RelativeSource = templatedParent });
+            // Aligné avec le curseur : le texte est décalé d'un Padding vers
+            // la droite (le champ applique son Padding deux fois : une fois
+            // par la marge du modèle, une fois en interne), alors que le
+            // watermark n'en a qu'un. On lui ajoute donc un Padding à gauche
+            // égal au Padding du champ, sinon le curseur tombe au milieu de
+            // la première lettre du texte d'aide.
+            watermark.SetBinding(
+                Controls.TextBlock.PaddingProperty,
+                new WPF.Data.Binding("Padding.Left")
+                {
+                    RelativeSource = templatedParent,
+                    Converter = new DoubleToLeftMarginConverter()
+                });
 
             // PART_ContentHost : partie obligatoire de TextBoxBase.
             // C'est ce ScrollViewer qui affiche et édite le texte.
@@ -6833,8 +6893,6 @@ namespace CustomObjectWPF.Model
                 Property = Controls.Control.ForegroundProperty,
                 Value = new WPF.Data.Binding(nameof(SelectedItemForeground)) { Source = this }
             });
-            itemTemplate.Triggers.Add(selectedTrigger);
-
             // Survolé : fond bleu très clair, texte inchangé (noir par défaut) : lisible.
             Trigger hoverTrigger = new()
             {
@@ -6849,6 +6907,11 @@ namespace CustomObjectWPF.Model
                     (Color)ColorConverter.ConvertFromString("#FFE5F1FB"))
             });
             itemTemplate.Triggers.Add(hoverTrigger);
+
+            // La sélection gagne sur le survol : quand on survole un élément
+            // choisi, c'est son fond (et son texte) qui restent — sinon un
+            // texte blanc deviendrait illisible sur le fond clair du survol.
+            itemTemplate.Triggers.Add(selectedTrigger);
 
             style.Setters.Add(new Setter(Controls.Control.TemplateProperty, itemTemplate));
 
@@ -6976,6 +7039,9 @@ namespace CustomObjectWPF.Model
             displayText.Name = "displayText";
             displayText.SetValue(Controls.Grid.ColumnProperty, 0);
             displayText.SetValue(FrameworkElement.VerticalAlignmentProperty, VerticalAlignment.Center);
+            displayText.SetBinding(
+                Controls.TextBlock.ForegroundProperty,
+                new WPF.Data.Binding(nameof(Foreground)) { RelativeSource = templatedParent });
 
             FrameworkElementFactory arrow = new(typeof(Controls.TextBlock));
             arrow.SetValue(Controls.Grid.ColumnProperty, 1);

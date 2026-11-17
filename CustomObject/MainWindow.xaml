@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:custom="clr-namespace:CustomObjectWPF.Model"
         mc:Ignorable="d"
-        Title="Vitrine CustomObjectWPF — v15" Width="1020" Height="860"
+        Title="Vitrine CustomObjectWPF — v16" Width="1020" Height="860"
         Background="#FF1E1E1E" Foreground="#FFEDEDED">
     <Window.Resources>
         <!-- Carte d'un exemple (nom de la propriété + explication + contrôle) -->
@@ -153,7 +153,7 @@
                             </StackPanel>
                         </Border>
                     </UniformGrid>
-                    <TextBlock Text="Librairie v15 — copie CustomObjectWPF.cs dans ton projet, ajoute xmlns:custom=&quot;clr-namespace:CustomObjectWPF.Model&quot; et c'est prêt." FontSize="12" Foreground="#FF888888" TextWrapping="Wrap" Margin="6,10,6,0" />
+                    <TextBlock Text="Librairie v16 — copie CustomObjectWPF.cs dans ton projet, ajoute xmlns:custom=&quot;clr-namespace:CustomObjectWPF.Model&quot; et c'est prêt." FontSize="12" Foreground="#FF888888" TextWrapping="Wrap" Margin="6,10,6,0" />
                 </StackPanel>
 
                 <!-- ===== ButtonCustom ===== -->
