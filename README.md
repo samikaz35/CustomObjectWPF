@@ -4,7 +4,7 @@ Mon premier projet en **VibeCoding**.
 
 L'idée, c'est d'expérimenter le vibe coding — coder en décrivant ce que je veux à une IA, puis itérer — en créant des **assets pour mes futurs projets WPF** : une librairie de contrôles custom, prêts à copier-coller.
 
-> **Version actuelle : v15** — 12 contrôles, 138 exemples dans la vitrine.
+> **Version actuelle : v16** — 12 contrôles, 138 exemples dans la vitrine.
 
 ---
 
@@ -158,6 +158,7 @@ Deux règles fixes (pas de propriété pour les changer) :
 
 - Le Watermark est **toujours un peu transparent (0,6)**, comme un vrai placeholder. La couleur se choisit avec `WatermarkColor`, la transparence est fixe.
 - Sa taille **= la taille de la police du champ** (`FontSize`). Pas de propriété de taille séparée.
+- Il est **aligné avec le curseur** : le texte d'aide commence exactement là où le curseur clignote (décalé d'un Padding vers la droite, parce que le champ décale son texte en interne).
 
 ```xml
 <custom:TextBoxCustom Watermark="Ex. : jean@email.com" WatermarkColor="DarkBlue" />
@@ -293,7 +294,7 @@ Une liste. La sélection est stylée, et les lignes peuvent contenir n'importe q
 | `SelectedItemForeground` | `Brush` | Noir | Le texte de la ligne choisie. |
 | `SelectedItemBorderBrush` | `Brush` | Cyan `#FF00D1FF` | La bordure de la ligne choisie. |
 
-Le survol d'une ligne montre un fond bleu très clair (texte inchangé, noir par défaut : lisible).
+Le survol d'une ligne montre un fond bleu très clair (texte inchangé, noir par défaut : lisible). **Quand on survole une ligne déjà choisie, c'est sa sélection qui reste** (son fond et son texte) : le survol ne cache jamais la sélection, donc un texte blanc sur fond bleu foncé reste lisible.
 
 ```xml
 <custom:ListBoxCustom Width="320" Height="180" SelectedItem="Code">
@@ -457,7 +458,7 @@ Un nombre avec boutons +/−, molette et flèches. Maintenir un bouton = répét
 
 ### ComboBoxCustom
 
-Une liste déroulante. La liste est un `Popup` (une fenêtre flottante) : elle suit le champ quand on défile, se ferme sur Entrée / Échap / clic ailleurs, et on peut naviguer aux flèches dès l'ouverture.
+Une liste déroulante. La liste est un `Popup` (une fenêtre flottante) : elle suit le champ quand on défile, se ferme sur Entrée / Échap / clic ailleurs, et on peut naviguer aux flèches dès l'ouverture. Le texte du champ est lié au `Foreground` du contrôle (noir par défaut), et **quand on survole un élément déjà choisi dans la liste, c'est sa sélection qui reste** (comme pour la ListBox).
 
 | Propriété | Type | Défaut | Ça fait quoi |
 | --- | --- | --- | --- |
@@ -558,6 +559,7 @@ La loupe montre un curseur « main » quand la souris passe dessus : on voit qu'
 - **v13** — Néon sur `CardCustom` + texte noir par défaut + Watermark semi-transparent (0,6) + Watermark derrière le texte + `IconHoverColor` / `ClearIconHoverColor`.
 - **v14** — Thème blanc : sélection de la liste déroulante lisible + la liste suit le champ quand on défile + titre des cartes noir par défaut + survol des lignes + voiles de survol gris.
 - **v15** — Bouton avec icône (`Icon` / `IconWidth` / `IconSpacing`) + clic sur la loupe (`SearchIconClicked`) + `Format` du nombre + `TitleFontWeight`.
+- **v16** — Le survol ne cache plus la sélection (ListBox + liste du ComboBox) + Watermark aligné avec le curseur + texte du champ du ComboBox lié au `Foreground` (noir par défaut).
 
 Le compteur `VERSION` est en tête de `CustomObjectWPF.cs`, avec l'historique : **+1 à chaque modification**.
 
